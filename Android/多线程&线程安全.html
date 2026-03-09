@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android 并发编程与线程安全 Mastery 手册</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3ddc84;
+            --secondary-color: #073042;
+            --accent-color: #4285f4;
+            --bg-color: #f4f6f8;
+            --code-bg: #1e1e1e;
+            --text-color: #333;
+            --border-color: #e1e4e8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+        }
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background-color: #fafbfc;
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .sidebar h3 {
+            color: var(--secondary-color);
+            font-size: 18px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        .sidebar a {
+            text-decoration: none;
+            color: #555;
+            font-size: 14px;
+            display: block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .sidebar a:hover {
+            background-color: #e1e4e8;
+            color: var(--secondary-color);
+        }
+        .sidebar a.active {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 60px;
+            flex: 1;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: var(--secondary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            color: var(--secondary-color);
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+            margin-top: 50px;
+            background: linear-gradient(90deg, #f9f9f9 0%, #fff 100%);
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #444;
+            margin-top: 30px;
+            font-weight: 600;
+        }
+        h4 {
+            color: #666;
+            margin-top: 20px;
+        }
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        .mermaid {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            border: 1px solid #333;
+        }
+        code {
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+        }
+        .inline-code {
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: #d63384;
+            font-size: 0.9em;
+        }
+        .note {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+            color: #856404;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left: 6px solid #28a745;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+            color: #155724;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #f6f8fa;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #fff;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .tag-java { background-color: #f89820; }
+        .tag-kotlin { background-color: #7f52ff; }
+        .tag-android { background-color: #3ddc84; color: #000; }
+        .tag-native { background-color: #666; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid var(--border-color); }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <h3>📚 知识导航</h3>
+            <ul>
+                <li><a href="#intro">1. 前言与设计哲学</a></li>
+                <li><a href="#jmm">2. 并发理论基础 (JMM)</a></li>
+                <li><a href="#handler">3. Android 消息机制 (Handler)</a></li>
+                <li><a href="#locks">4. 锁机制与底层原理</a></li>
+                <li><a href="#atoms">5. 原子类与 CAS</a></li>
+                <li><a href="#threadlocal">6. 线程隔离 (ThreadLocal)</a></li>
+                <li><a href="#pool">7. 线程池最佳实践</a></li>
+                <li><a href="#coroutines">8. Kotlin 协程 (现代方案)</a></li>
+                <li><a href="#pitfalls">9. 常见陷阱与调试</a></li>
+                <li><a href="#checklist">10. 资深开发检查清单</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>Android 并发编程与线程安全 Mastery 手册</h1>
+            <p><strong>版本：</strong> 1.0.0 | <strong>适用对象：</strong> Android 中高级开发工程师 | <strong>目标：</strong> 构建完整的并发知识体系，深入理解底层原理</p>
+            
+            <div class="note">
+                <strong>📘 手册说明：</strong> 本手册不仅涵盖 API 使用，更侧重于 <code>Why</code> (设计原因) 和 <code>How</code> (底层实现)。建议结合 Android 源码 (Framework) 阅读以达到最佳效果。
+            </div>
+
+            <h2 id="intro">1. 前言与设计哲学</h2>
+            <p>Android 的并发模型建立在 Java 并发基础之上，但针对移动设备的特性（UI 渲染、电池、生命周期）做了大量定制。理解其设计哲学是避免并发错误的第一步。</p>
+            
+            <h3>1.1 为什么 UI 是单线程的？</h3>
+            <p>Android UI 工具包（View 体系）不是线程安全的。如果允许多线程操作 UI，将引入复杂的锁机制，导致：</p>
+            <ul>
+                <li><strong>死锁风险增加</strong>：多个线程互相等待锁。</li>
+                <li><strong>性能开销大</strong>：锁竞争导致上下文切换频繁。</li>
+                <li><strong>调试困难</strong>：竞态条件难以复现。</li>
+            </ul>
+            <p><strong>设计决策</strong>：采用 <strong>单线程渲染模型</strong>。所有 UI 操作必须在主线程（Main Thread），耗时操作必须在子线程（Worker Thread）。</p>
+
+            <h3>1.2 线程切换的代价</h3>
+            <p>线程不是越多越好。线程切换涉及：</p>
+            <ol>
+                <li>保存当前线程上下文（寄存器、程序计数器）。</li>
+                <li>加载新线程上下文。</li>
+                <li>刷新 CPU 缓存（Cache Miss）。</li>
+            </ol>
+            <p>频繁切换会导致 CPU 时间片浪费在调度上，而非业务逻辑。</p>
+
+            <h2 id="jmm">2. 并发理论基础 (JMM)</h2>
+            <p>Java 内存模型 (JMM) 定义了线程如何与主内存和工作内存交互。并发问题的根源在于：<strong>原子性、可见性、有序性</strong> 无法得到保证。</p>
+
+            <h3>2.1 三大特性详解</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>特性</th>
+                        <th>定义</th>
+                        <th>问题示例</th>
+                        <th>解决方案</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>原子性</strong></td>
+                        <td>操作不可中断，要么全做要么全不做。</td>
+                        <td><code>i++</code> (读 - 改 - 写)</td>
+                        <td><code>synchronized</code>, <code>Lock</code>, <code>Atomic</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>可见性</strong></td>
+                        <td>线程修改变量，其他线程立即可见。</td>
+                        <td>死循环读取不到新值</td>
+                        <td><code>volatile</code>, <code>synchronized</code>, <code>Lock</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>有序性</strong></td>
+                        <td>程序执行顺序与代码顺序一致。</td>
+                        <td>指令重排序导致初始化未完成</td>
+                        <td><code>volatile</code> (禁止重排), <code>Happens-Before</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>2.2 Happens-Before 规则</h3>
+            <p>JMM 定义了一系列规则来判断操作之间的可见性。核心规则包括：</p>
+            <ul>
+                <li><strong>程序顺序规则</strong>：一个线程内，按照代码顺序，书写在前面的操作先行发生于书写在后面的操作。</li>
+                <li><strong>volatile 变量规则</strong>：对一个 volatile 变量的写操作先行发生于后面对这个变量的读操作。</li>
+                <li><strong>传递性</strong>：如果 A happens-before B，且 B happens-before C，那么 A happens-before C。</li>
+            </ul>
+
+            <div class="mermaid">
+            flowchart TD
+                subgraph Thread1 [线程 1]
+                    A[写入 volatile 变量 v]
+                end
+                subgraph Main [主内存]
+                    B[刷新到主内存]
+                end
+                subgraph Thread2 [线程 2]
+                    C[读取 volatile 变量 v]
+                end
+                
+                A -->|StoreStore 屏障 | B
+                B -->|LoadLoad 屏障 | C
+                style A fill:#e1f5fe,stroke:#01579b
+                style C fill:#fff3e0,stroke:#e65100
+                style B fill:#f3e5f5,stroke:#4a148c
+            </div>
+            <p><em>图 2.1: volatile 内存屏障确保可见性与有序性</em></p>
+
+            <h2 id="handler">3. Android 消息机制 (Handler)</h2>
+            <p>Handler 是 Android 线程间通信的核心。理解它对于理解 UI 刷新、AsyncTask 底层、协程调度器至关重要。</p>
+
+            <h3>3.1 核心组件职责</h3>
+            <ul>
+                <li><strong>Thread</strong>：线程载体，每个线程拥有独立的 Looper。</li>
+                <li><strong>Looper</strong>：消息循环器，内部维护死循环 <code>loop()</code>，不断从 MessageQueue 取消息。</li>
+                <li><strong>MessageQueue</strong>：消息队列，底层采用单链表结构，支持同步屏障（Sync Barrier）优先处理异步消息。</li>
+                <li><strong>Handler</strong>：消息发送者 (<code>sendMessage</code>) 和处理者 (<code>handleMessage</code>)。</li>
+            </ul>
+
+            <h3>3.2 消息流转源码分析</h3>
+            <p><strong>Looper.loop() 核心逻辑：</strong></p>
+            <pre><code class="language-java">// frameworks/base/core/java/android/os/Looper.java
+public static void loop() {
+    final Looper me = myLooper();
+    if (me == null) throw new RuntimeException("No Looper...");
+    final MessageQueue queue = me.mQueue;
+
+    for (;;) {
+        // 1. 获取消息。若无消息，nativePollOnce 会阻塞线程，不消耗 CPU
+        Message msg = queue.next(); 
+        if (msg == null) return; // 退出循环
+
+        // 2. 标记消息开始处理时间 (用于监控 ANR)
+        msg.target.dispatchMessage(msg);
+
+        // 3. 回收消息
+        msg.recycleUnchecked();
+    }
+}</code></pre>
+            <p><strong>设计原因</strong>：为什么需要死循环？因为线程执行完 <code>run()</code> 默认会销毁。UI 线程需要永久存活以响应用户交互，<code>loop()</code> 保证线程不退出，且在无消息时通过 native 层阻塞（epoll 机制）节省电量。</p>
+
+            <div class="mermaid">
+            sequenceDiagram
+                participant Worker as 子线程
+                participant H as Handler
+                participant MQ as MessageQueue
+                participant L as Looper (Main)
+                participant UI as UI 组件
+
+                Worker->>H: sendMessage(msg)
+                H->>MQ: enqueueMessage(msg)
+                Note over MQ: 插入链表<br/>按 when 排序
+                L->>MQ: next()
+                Note over L: 无消息时<br/>nativePollOnce 阻塞
+                MQ-->>L: 返回 Message
+                L->>H: dispatchMessage(msg)
+                H->>UI: handleMessage()
+                Note over UI: 更新界面
+            </div>
+            <p><em>图 3.1: Handler 消息完整流转过程</em></p>
+
+            <h3>3.3 同步屏障 (Sync Barrier)</h3>
+            <p>Android 为了保证 UI 流畅，引入了同步屏障。当屏障存在时，<code>MessageQueue</code> 会跳过所有同步消息，优先处理异步消息（如 VSync 信号驱动的 Choreographer）。</p>
+            <ul>
+                <li><strong>应用场景</strong>：UI 渲染优先级高于普通消息。</li>
+                <li><strong>API</strong>：<code>MessageQueue.postSyncBarrier()</code> (隐藏 API，框架内部使用)。</li>
+            </ul>
+
+            <h2 id="locks">4. 锁机制与底层原理</h2>
+            <p>锁是保证线程安全最直接的手段。Android 中主要使用 <code>synchronized</code> 和 <code>ReentrantLock</code>。</p>
+
+            <h3>4.1 synchronized 锁升级过程</h3>
+            <p>JVM 为了减少锁开销，实现了偏向锁 -> 轻量级锁 -> 重量级锁的升级过程。</p>
+            <div class="mermaid">
+            flowchart LR
+                A[无锁] -->|第一个线程访问 | B(偏向锁)
+                B -->|另一个线程竞争 | C(轻量级锁)
+                C -->|自旋失败/竞争激烈 | D(重量级锁)
+                D -->|OS Mutex| E[线程阻塞]
+                
+                style A fill:#e8f5e9,stroke:#2e7d32
+                style B fill:#fff3e0,stroke:#ef6c00
+                style C fill:#e3f2fd,stroke:#1565c0
+                style D fill:#ffebee,stroke:#c62828
+            </div>
+            <ul>
+                <li><strong>偏向锁</strong>：记录线程 ID。若无竞争，无需 CAS 操作。</li>
+                <li><strong>轻量级锁</strong>：使用 CAS 自旋。若短时间获得锁，避免阻塞。</li>
+                <li><strong>重量级锁</strong>：依赖操作系统互斥量 (Mutex)，线程挂起，开销大。</li>
+            </ul>
+
+            <h3>4.2 AQS (AbstractQueuedSynchronizer)</h3>
+            <p><code>ReentrantLock</code>, <code>CountDownLatch</code>, <code>Semaphore</code> 的基石。</p>
+            <ul>
+                <li><strong>核心状态</strong>：<code>volatile int state</code>。0 表示无锁，>0 表示有锁（可重入次数）。</li>
+                <li><strong>队列</strong>：FIFO 双向队列 (CLH 变体)，存储等待线程。</li>
+                <li><strong>获取锁</strong>：CAS 尝试修改 state。失败则封装成 Node 入队，调用 <code>LockSupport.park()</code> 阻塞。</li>
+                <li><strong>释放锁</strong>：修改 state，调用 <code>LockSupport.unpark()</code> 唤醒后继节点。</li>
+            </ul>
+
+            <h2 id="atoms">5. 原子类与 CAS</h2>
+            <p>基于硬件指令的无锁并发方案，性能高于锁，但高竞争下消耗 CPU。</p>
+
+            <h3>5.1 CAS (Compare-And-Swap)</h3>
+            <p>包含三个操作数：内存位置 V、预期原值 A、新值 B。仅当 V==A 时，将 V 更新为 B。</p>
+            <div class="warning">
+                <strong>ABA 问题：</strong> 值从 A 变 B 又变回 A，CAS 误判成功。<br>
+                <strong>解决：</strong> 使用 <code>AtomicStampedReference</code> 增加版本号。
+            </div>
+
+            <h3>5.2 LongAdder (高性能计数器)</h3>
+            <p>在 Android 高并发计数场景（如统计埋点），<code>AtomicLong</code> 可能成为瓶颈。<code>LongAdder</code> 采用分段累加，最后汇总，减少热点竞争。</p>
+
+            <h2 id="threadlocal">6. 线程隔离 (ThreadLocal)</h2>
+            <p>让每个线程拥有独立的变量副本，避免共享竞争。</p>
+
+            <h3>6.1 底层结构</h3>
+            <p>每个 <code>Thread</code> 对象内部维护一个 <code>ThreadLocalMap</code>。</p>
+            <ul>
+                <li><strong>Key</strong>：<code>ThreadLocal</code> 对象本身（弱引用）。</li>
+                <li><strong>Value</strong>：存储的数据（强引用）。</li>
+            </ul>
+
+            <h3>6.2 内存泄漏风险</h3>
+            <div class="mermaid">
+            classDiagram
+                class Thread {
+                    ThreadLocalMap threadLocals
+                }
+                class ThreadLocalMap {
+                    Entry[] table
+                }
+                class Entry {
+                    WeakReference~ThreadLocal~ key
+                    Object value
+                }
+                Thread --> ThreadLocalMap
+                ThreadLocalMap ..> Entry
+                note for Entry "Key 为 null 时\nValue 仍被强引用\n若线程存活则泄漏"
+            </div>
+            <p><strong>泄漏原因</strong>：若线程长期存活（如线程池），Key 被 GC 回收变为 null，但 Value 仍被 Map 强引用，无法回收。</p>
+            <p><strong>最佳实践</strong>：使用完毕后必须调用 <code>threadLocal.remove()</code>。</p>
+            <p><strong>Android 应用</strong>：<code>Looper.sThreadLocal</code> 确保每个线程只有一个 Looper。</p>
+
+            <h2 id="pool">7. 线程池最佳实践</h2>
+            <p>避免手动创建 <code>new Thread()</code>，使用线程池复用资源。</p>
+
+            <h3>7.1 ThreadPoolExecutor 核心参数</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>含义</th>
+                        <th>调优建议</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>corePoolSize</code></td>
+                        <td>核心线程数</td>
+                        <td>CPU 密集型：CPU 核数 +1；IO 密集型：2 * CPU 核数</td>
+                    </tr>
+                    <tr>
+                        <td><code>maximumPoolSize</code></td>
+                        <td>最大线程数</td>
+                        <td>防止资源耗尽，需结合系统内存评估</td>
+                    </tr>
+                    <tr>
+                        <td><code>workQueue</code></td>
+                        <td>任务队列</td>
+                        <td>建议使用有界队列 (如 ArrayBlockingQueue)，防止 OOM</td>
+                    </tr>
+                    <tr>
+                        <td><code>RejectedExecutionHandler</code></td>
+                        <td>拒绝策略</td>
+                        <td>默认 AbortPolicy 抛异常。可自定义日志或丢弃策略</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>7.2 Android 中的线程池</h3>
+            <ul>
+                <li><strong>AsyncTask</strong>：内部使用静态线程池，串行/并行策略随版本变化，已废弃。</li>
+                <li><strong>Glide</strong>：使用固定的核心线程池处理图片加载。</li>
+                <li><strong>推荐</strong>：根据业务场景自定义线程池，或使用协程调度器。</li>
+            </ul>
+
+            <h2 id="coroutines">8. Kotlin 协程 (现代方案)</h2>
+            <p>协程是轻量级的线程，基于挂起函数实现非阻塞异步。</p>
+
+            <h3>8.1 结构化并发 (Structured Concurrency)</h3>
+            <p>协程必须在一个 <code>CoroutineScope</code> 中启动。Scope 销毁时，所有子协程自动取消。</p>
+            <div class="success">
+                <strong>优势：</strong> 彻底解决“页面销毁了，后台线程还在跑”导致的崩溃和泄漏。
+            </div>
+
+            <h3>8.2 常用调度器 (Dispatchers)</h3>
+            <ul>
+                <li><code>Dispatchers.Main</code>：主线程，UI 操作。</li>
+                <li><code>Dispatchers.IO</code>：磁盘/网络 IO，默认 64 个线程。</li>
+                <li><code>Dispatchers.Default</code>：CPU 密集型计算，默认等于 CPU 核心数。</li>
+                <li><code>Dispatchers.Unconfined</code>：不限线程，仅用于特定场景。</li>
+            </ul>
+
+            <h3>8.3 代码示例</h3>
+            <pre><code class="language-kotlin">// ViewModel 中推荐写法
+viewModelScope.launch {
+    // 1. 主线程：更新 UI
+    uiState.value = Loading
+    
+    try {
+        // 2. 切换到 IO 线程：网络请求
+        val data = withContext(Dispatchers.IO) {
+            repository.fetchData()
+        }
+        
+        // 3. 自动切回主线程：更新结果
+        uiState.value = Success(data)
+    } catch (e: Exception) {
+        // 4. 异常处理
+        uiState.value = Error(e.message)
+    }
+}
+// viewModelScope 销毁时，上述所有任务自动取消</code></pre>
+
+            <h2 id="pitfalls">9. 常见陷阱与调试</h2>
+
+            <h3>9.1 ANR (Application Not Responding)</h3>
+            <ul>
+                <li><strong>定义</strong>：主线程阻塞超过 5 秒 (输入事件) 或 10 秒 (广播)。</li>
+                <li><strong>检测</strong>：开启开发者选项“显示 CPU 使用情况”，或使用 <code>StrictMode</code>。</li>
+                <li><strong>排查</strong>：分析 <code>/data/anr/traces.txt</code>，查找主线程堆栈。</li>
+            </ul>
+
+            <h3>9.2 内存泄漏自查表</h3>
+            <ul>
+                <li>[ ] Handler 是否为静态内部类？是否移除了消息？</li>
+                <li>[ ] ThreadLocal 是否调用了 remove()？</li>
+                <li>[ ] 单例是否持有了 Activity Context？(应使用 Application)</li>
+                <li>[ ] 协程是否使用了正确的 Scope (lifecycleScope/viewModelScope)？</li>
+                <li>[ ] 静态集合是否清除了 Activity 引用？</li>
+            </ul>
+
+            <h3>9.3 调试工具</h3>
+            <ul>
+                <li><strong>Android Profiler</strong>：查看 CPU 线程活动，识别阻塞。</li>
+                <li><strong>StrictMode</strong>：检测主线程网络/磁盘操作。</li>
+                <li><strong>BlockCanary</strong>：第三方库，监控主线程卡顿。</li>
+            </ul>
+
+            <h2 id="checklist">10. 资深开发检查清单</h2>
+            <div class="note">
+                在代码 Review 或提交前，请对照此清单检查并发相关代码。
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>检查项</th>
+                        <th>标准</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>UI 操作</td>
+                        <td>确保所有 View 操作在主线程。</td>
+                    </tr>
+                    <tr>
+                        <td>耗时任务</td>
+                        <td>网络、IO、计算必须子线程。</td>
+                    </tr>
+                    <tr>
+                        <td>锁粒度</td>
+                        <td>锁范围尽可能小，避免锁住无关代码。</td>
+                    </tr>
+                    <tr>
+                        <td>死锁风险</td>
+                        <td>避免嵌套锁，或固定锁获取顺序。</td>
+                    </tr>
+                    <tr>
+                        <td>生命周期</td>
+                        <td>异步任务必须感知生命周期，页面销毁即取消。</td>
+                    </tr>
+                    <tr>
+                        <td>Context</td>
+                        <td>长生命周期对象严禁持有 Activity Context。</td>
+                    </tr>
+                    <tr>
+                        <td>集合安全</td>
+                        <td>多线程共享集合使用 ConcurrentHashMap 等。</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="text-align: center; color: #888; margin-top: 60px; border-top: 1px solid #eee; padding-top: 20px;">
+                Android Concurrency Mastery Handbook &copy; 2023 | Generated by Senior Android Developer Assistant
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 初始化 Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: { useMaxWidth: true, htmlLabels: true }
+        });
+
+        // 简单的侧边栏高亮逻辑
+        const links = document.querySelectorAll('.sidebar a');
+        const sections = document.querySelectorAll('h2');
+        
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            links.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
