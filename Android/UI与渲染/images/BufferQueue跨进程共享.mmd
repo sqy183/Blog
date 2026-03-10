@@ -1,0 +1,68 @@
+flowchart LR
+subgraph AppProducer["App Process (Producer)"]
+BQP["BufferQueueProducer<br/>IGraphicBufferProducer"]
+S["Surface<br/>ANativeWindow"]
+RT["RenderThread"]
+
+RT -->|dequeue/queueBuffer| S
+S -->|JNI| BQP
+end
+
+subgraph SharedMem["Shared Memory (Kernel)"]
+BQCORE["BufferQueueCore<br/>mSlots[64]"]
+
+subgraph Slot0["Slot 0 (DEQUEUED)"]
+S0["GraphicBuffer #0<br/>ashmem fd=123<br/>state=DEQUEUED"]
+end
+
+subgraph Slot1["Slot 1 (QUEUED)"]
+S1["GraphicBuffer #1<br/>ashmem fd=124<br/>state=QUEUED"]
+end
+
+subgraph Slot2["Slot 2 (ACQUIRED)"]
+S2["GraphicBuffer #2<br/>ashmem fd=125<br/>state=ACQUIRED"]
+end
+
+subgraph SlotRest["Slot 3-63 (FREE/INVALID)"]
+S3["...<br/>mGraphicBuffer=null"]
+end
+
+BQCORE --> S0
+BQCORE --> S1
+BQCORE --> S2
+BQCORE --> S3
+end
+
+subgraph SFConsumer["SurfaceFlinger (Consumer)"]
+BQC["BufferQueueConsumer<br/>IGraphicBufferConsumer"]
+L["Layer"]
+SF["SurfaceFlinger"]
+
+L -->|mConsumer| BQC
+SF -->|mDrawingState| L
+BQC -->|acquire/releaseBuffer| BQCORE
+end
+
+BQP -.->|Binder传递 core 指针| BQCORE
+BQC -.->|直接持有 core 指针| BQCORE
+
+RT -.->|GPU填充| S0
+S0 -.->|mmap| SF
+S1 -.->|mmap| SF
+S2 -.->|mmap| SF
+
+GPU["GPU Hardware"] -->|acquireFence fd| BQP
+BQP -->|Binder传递 fd| BQC
+BQC -->|wait| GPU
+
+HW["Display Hardware"] -->|releaseFence fd| SF
+SF -->|Binder传递 fd| BQP
+BQP -->|wait| HW
+
+classDef appProcess fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+classDef sfProcess fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+classDef shared fill:#fff3e0,stroke:#e65100,stroke-width:2px
+
+class AppProducer,BQP,S,RT appProcess
+class SFConsumer,BQC,L,SF sfProcess
+class SharedMem,BQCORE,S0,S1,S2,S3 shared

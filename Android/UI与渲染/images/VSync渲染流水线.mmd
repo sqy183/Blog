@@ -1,0 +1,59 @@
+sequenceDiagram
+participant HW as Display Hardware<br/>(HW VSync)
+participant SF as SurfaceFlinger<br/>(Native)
+participant ET as EventThread<br/>(Native)
+participant WMS as WindowManagerService<br/>(System Server)
+participant VRI as ViewRootImpl<br/>(App Process)
+participant RT as RenderThread<br/>(App Process)
+participant GPU as GPU Hardware
+participant BQ as BufferQueueCore<br/>(Shared)
+
+Note over HW,SF: 阶段1: VSync 信号分发 (t=0ms)
+HW->>SF: HW VSync (60Hz)
+SF->>SF: computeDirtyRegion()
+alt 有脏区域 (用户交互/动画)
+SF->>ET: dispatchVsync(dirtyRegion)
+ET->>VRI: Choreographer#doFrame(frameTimeNanos)
+else 无脏区域 (静态界面)
+ET-.->VRI: 无信号 (App 不绘制)
+SF->>SF: onMessageInvalidate() // SF 自身合成
+end
+
+Note over VRI,RT: 阶段2: 应用绘制 (仅脏区域触发)
+VRI->>VRI: performTraversals()
+VRI->>VRI: measure/layout/draw → DisplayList
+VRI->>RT: syncAndDrawFrame()
+RT->>RT: parse DisplayList → GL commands
+RT->>BQ: dequeueBuffer() // 从 FREE slot 获取 buffer
+RT->>GPU: submit GL commands (async)
+GPU->>GPU: rasterize → fill GraphicBuffer
+GPU->>RT: signal acquireFence (fd)
+RT->>BQ: queueBuffer(buffer, acquireFence)
+BQ->>SF: onFrameAvailable() // Binder callback
+
+Note over SF,BQ: 阶段3: 合成与显示 (t=16.67ms)
+HW->>SF: Next HW VSync
+SF->>SF: handleRefresh()
+SF->>BQ: acquireBuffer() // 等待 acquireFence
+BQ-->>SF: buffer + releaseFence
+SF->>SF: preComposition() // 计算可见区域
+alt 简单Layer (不透明)
+SF->>HWC: setLayer(buffer, z-order)
+else 复杂Layer (半透明)
+SF->>RE: drawLayers() // GPU合成
+RE->>GPU: submit composition commands
+GPU->>SF: synthesized buffer
+SF->>HWC: setClientTarget(synthesized buffer)
+end
+SF->>HWC: presentDisplay(releaseFence)
+HWC->>HW: commit to Display Controller
+HW->>HW: refresh panel (next VSync)
+
+Note over SF,BQ: 阶段4: Buffer 释放 (异步)
+HW->>SF: scanout complete → trigger releaseFence
+SF->>BQ: releaseBuffer(buffer)
+BQ->>BQ: slot state: ACQUIRED → FREE
+BQ-.->RT: 可重用 (下次 dequeueBuffer)
+
+Note over SF: 静态界面特殊处理
+Note right of SF: 无新帧时:<br/>- 不调用 releaseBuffer()<br/>- 持有 buffer 重复合成<br/>- mActiveBuffer 不变

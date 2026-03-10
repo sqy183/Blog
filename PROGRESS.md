@@ -8,18 +8,23 @@
 | 文档 | 路径 | 覆盖内容 | 完成度 |
 |------|------|---------|--------|
 | App 冷启动流程 | `Android/Framework/app启动流程.md` | 五阶段全流程、启动度量、优化实战（含 AsyncLayoutInflater 原理、View 预加载+MutableContextWrapper）、10 道面试题 | 高 |
+| 消息机制 | `Android/Framework/消息机制.md` | Handler/Looper/MessageQueue 源码分析、Message 对象池、同步屏障与 VSync、IdleHandler、epoll 底层、与协程关系、9 道面试题 | 高 |
 | 类加载机制 | `Android/Java与Kotlin基础/类加载机制.md` | JVM 类加载、双亲委派、打破双亲委派、Android ClassLoader 体系、dexElements 原理、7 道面试题 | 高 |
+| 并发编程与线程安全 | `Android/Java与Kotlin基础/并发编程与线程安全.md` | JMM 三大特性、volatile 语义、synchronized 锁升级、AQS 原理、CAS/原子类、ThreadLocal、线程池调优、Kotlin 协程、7 道面试题 | 高 |
+| Android 页面绘制 | `Android/UI与渲染/Android页面绘制.md` | View 三大流程（measure/layout/draw）、三进程架构类关系、VSync 渲染流水线、BufferQueue 机制、Fence 同步、Buffer Holding、8 道面试题 | 高 |
 | 技能图谱 | `Android/技能图谱.md` | 十一大章节的完整大纲（含端侧AI与大模型），5/7/10 年能力分层参考 | 完整（持续更新索引） |
 
-## 历史遗留文档（非 Markdown 格式）
+## 历史遗留文档（已迁移为 Markdown）
 
-以下为早期创建的 HTML/PDF 文档，内容有效但格式不统一，后续可考虑迁移为 Markdown：
+以下 HTML/PDF 文档的内容已全部迁移到对应的 Markdown 文档中，可安全删除：
 
-| 文档 | 路径 |
-|------|------|
-| Android 页面绘制 | `Android/UI与渲染/Android页面绘制_美化版.html` |
-| 多线程与线程安全 | `Android/Java与Kotlin基础/多线程&线程安全.html` |
-| 消息队列 | `Android/Framework/消息队列.html` |
+| 旧文件 | 迁移目标 |
+|--------|---------|
+| `Android/UI与渲染/Android页面绘制_美化版.html` | `Android/UI与渲染/Android页面绘制.md` |
+| `Android/UI与渲染/Android页面绘制.html` | 同上（早期版本） |
+| `Android/UI与渲染/Android页面绘制_美化版.pdf` | 同上（PDF 导出版） |
+| `Android/Java与Kotlin基础/多线程&线程安全.html` | `Android/Java与Kotlin基础/并发编程与线程安全.md` |
+| `Android/Framework/消息队列.html` | `Android/Framework/消息机制.md` |
 
 ## 待建设的重点领域
 
@@ -31,7 +36,6 @@
 - [ ] 事件分发机制（UI 核心，面试极高频）
 - [ ] RecyclerView 缓存机制（面试高频）
 - [ ] Kotlin 协程原理（挂起函数、调度器、结构化并发）
-- [ ] Handler/Looper 消息机制深度解析（已有 HTML，待 Markdown 化并扩展）
 - [ ] Activity 生命周期与启动模式
 - [ ] 内存泄漏与内存优化
 
@@ -62,3 +66,5 @@
 - 重视面试场景，每篇文档都希望附带面试题
 - 习惯在不同设备/AI助手之间切换工作，因此规则和进度必须持久化在项目中
 - 不使用 emoji（技能图谱中 📄 索引标记除外）
+- 文档要求使用 Markdown 格式，不使用 HTML
+- 复杂流程图使用 SVG 矢量图（Mermaid 源码 → mmdc 渲染），不要用 ASCII 硬画复杂图；简单线性调用链可用 ASCII

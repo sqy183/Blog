@@ -1,0 +1,77 @@
+flowchart TD
+subgraph AppProcess["App Process (com.example.app)"]
+direction TB
+
+subgraph JavaLayer["Java Framework Layer"]
+AT["ActivityThread\nframeworks/base/core/java/android/app/ActivityThread.java"]
+A["Activity\nframeworks/base/core/java/android/app/Activity.java"]
+PW["PhoneWindow\nframeworks/base/core/java/com/android/internal/policy/PhoneWindow.java"]
+DV["DecorView\nframeworks/base/core/java/com/android/internal/policy/DecorView.java"]
+VRI["ViewRootImpl\nframeworks/base/core/java/android/view/ViewRootImpl.java"]
+C["Choreographer\nframeworks/base/core/java/android/view/Choreographer.java"]
+WMG["WindowManagerGlobal\nframeworks/base/core/java/android/view/WindowManagerGlobal.java"]
+end
+
+subgraph NativeLayer["Native Layer (libgui)"]
+RT["RenderThread\nframeworks/base/libs/hwui/renderthread/RenderThread.cpp"]
+S["Surface\nframeworks/native/libs/gui/Surface.cpp"]
+BQP["BufferQueueProducer\nframeworks/native/libs/gui/BufferQueueProducer.cpp"]
+end
+
+AT -->|holds| A
+A -->|mWindow| PW
+PW -->|mDecor| DV
+WMG -->|mRoots ArrayList| VRI
+VRI -->|mView| DV
+VRI -->|mSurface| S
+VRI -->|mAttachInfo.mThreadedRenderer| RT
+VRI -->|mChoreographer| C
+S -->|mGraphicBufferProducer| BQP
+RT -->|ANativeWindow| S
+end
+
+subgraph SystemServer["System Server Process"]
+WMS["WindowManagerService\nframeworks/base/services/core/java/com/android/server/wm/WindowManagerService.java"]
+WS["WindowState\nframeworks/base/services/core/java/com/android/server/wm/WindowState.java"]
+end
+
+subgraph SFProcess["SurfaceFlinger Process"]
+direction TB
+
+SF["SurfaceFlinger\nframeworks/native/services/surfaceflinger/SurfaceFlinger.cpp"]
+
+subgraph LayerMgmt["Layer Management"]
+L["Layer\nframeworks/native/services/surfaceflinger/Layer.cpp"]
+BQC["BufferQueueConsumer\nframeworks/native/libs/gui/BufferQueueConsumer.cpp"]
+BQCORE["BufferQueueCore\nframeworks/native/libs/gui/BufferQueueCore.cpp"]
+end
+
+subgraph Composition["Composition Engine"]
+CE["CompositionEngine\nframeworks/native/services/surfaceflinger/CompositionEngine/src/CompositionEngine.cpp"]
+RE["RenderEngine\nframeworks/native/services/surfaceflinger/RenderEngine/RenderEngine.cpp"]
+HWC["HWComposer\nhardware/interfaces/graphics/composer/"]
+end
+
+SF -->|mDrawingState.layers| L
+L -->|mConsumer| BQC
+BQC -->|shared| BQCORE
+SF -->|mCompositionEngine| CE
+CE -->|mRenderEngine| RE
+CE -->|mHWComposer| HWC
+end
+
+%% 跨进程关系
+BQP -.->|shares BufferQueueCore| BQCORE
+VRI -.->|Binder: IWindowSession| WMS
+WMS -.->|Binder: ISurfaceComposer| SF
+L -.->|owns| BQCORE
+
+classDef appProcess fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+classDef systemProcess fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+classDef sfProcess fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+classDef shared fill:#fff3e0,stroke:#e65100,stroke-width:2px
+
+class AT,A,PW,DV,VRI,C,WMG,RT,S,BQP,JavaLayer,NativeLayer,AppProcess appProcess
+class WMS,WS,SystemServer systemProcess
+class SF,L,BQC,BQCORE,CE,RE,HWC,LayerMgmt,Composition,SFProcess sfProcess
+class BQCORE shared
