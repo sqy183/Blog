@@ -1,0 +1,29 @@
+sequenceDiagram
+participant C as Client Process<br/>(App)
+participant CP as Proxy / BinderProxy<br/>(Java + Native)
+participant K as Binder Driver<br/>(Kernel)
+participant SP as BBinder / Stub<br/>(Java + Native)
+participant S as Server Process<br/>(SystemServer)
+
+Note over C,S: 阶段1: Client 发起调用
+C->>CP: IXxxService.method(args)
+CP->>CP: Parcel.writeInterfaceToken()<br/>Parcel.writeXxx(args)
+CP->>K: ioctl(BINDER_WRITE_READ)<br/>[BC_TRANSACTION + data]
+
+Note over K: 阶段2: 内核处理
+K->>K: binder_transaction()<br/>① 在 target 的 mmap 区域分配 buffer<br/>② copy_from_user()【一次拷贝】<br/>③ 将事务挂到 target 的 todo 队列
+K->>SP: 唤醒 Server Binder 线程<br/>[BR_TRANSACTION]
+
+Note over SP,S: 阶段3: Server 处理请求
+SP->>SP: IPCThreadState::executeCommand()<br/>→ BBinder::transact()<br/>→ JavaBBinder::onTransact() [JNI]
+SP->>S: Stub.onTransact()<br/>→ 分发到具体 method() 实现
+S->>SP: 返回结果<br/>reply.writeXxx()
+SP->>K: ioctl(BINDER_WRITE_READ)<br/>[BC_REPLY + reply]
+
+Note over K: 阶段4: 内核传递 Reply
+K->>K: binder_transaction()<br/>copy_from_user()【reply 拷贝】
+K->>CP: 唤醒 Client 线程<br/>[BR_REPLY]
+
+Note over C,CP: 阶段5: Client 收到结果
+CP->>CP: reply.readXxx()
+CP->>C: 返回调用结果

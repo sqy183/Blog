@@ -1,0 +1,44 @@
+sequenceDiagram
+    participant A as Activity
+    participant VG1 as 外层 ViewGroup
+    participant VG2 as 内层 ViewGroup
+    participant V as 目标 View
+
+    Note over A,V: === ACTION_DOWN（寻找消费者） ===
+
+    A->>A: dispatchTouchEvent(DOWN)
+    A->>VG1: PhoneWindow → DecorView → ViewGroup.dispatchTouchEvent(DOWN)
+    VG1->>VG1: onInterceptTouchEvent() → false (不拦截)
+    VG1->>VG2: child.dispatchTouchEvent(DOWN)
+    VG2->>VG2: onInterceptTouchEvent() → false (不拦截)
+    VG2->>V: child.dispatchTouchEvent(DOWN)
+    V->>V: onTouchEvent(DOWN) → true (消费)
+    V-->>VG2: return true
+    Note over VG2: 记录 mFirstTouchTarget = View
+    VG2-->>VG1: return true
+    Note over VG1: 记录 mFirstTouchTarget = VG2
+    VG1-->>A: return true
+
+    Note over A,V: === ACTION_MOVE（直达消费者） ===
+
+    A->>VG1: dispatchTouchEvent(MOVE)
+    VG1->>VG1: onInterceptTouchEvent() → false
+    Note over VG1: mFirstTouchTarget != null → 直接转发
+    VG1->>VG2: mFirstTouchTarget.child.dispatchTouchEvent(MOVE)
+    VG2->>VG2: onInterceptTouchEvent() → false
+    VG2->>V: mFirstTouchTarget.child.dispatchTouchEvent(MOVE)
+    V->>V: onTouchEvent(MOVE) → true
+    V-->>VG2: return true
+    VG2-->>VG1: return true
+
+    Note over A,V: === ACTION_UP（结束事件序列） ===
+
+    A->>VG1: dispatchTouchEvent(UP)
+    VG1->>VG2: 转发（同 MOVE）
+    VG2->>V: 转发
+    V->>V: onTouchEvent(UP) → true
+    V-->>VG2: return true
+    Note over VG2: 清除 mFirstTouchTarget
+    VG2-->>VG1: return true
+    Note over VG1: 清除 mFirstTouchTarget
+    VG1-->>A: return true

@@ -12,6 +12,8 @@
 | 类加载机制 | `Android/Java与Kotlin基础/类加载机制.md` | JVM 类加载、双亲委派、打破双亲委派、Android ClassLoader 体系、dexElements 原理、7 道面试题 | 高 |
 | 并发编程与线程安全 | `Android/Java与Kotlin基础/并发编程与线程安全.md` | JMM 三大特性、volatile 语义、synchronized 锁升级、AQS 原理、CAS/原子类、ThreadLocal、线程池调优、Kotlin 协程、7 道面试题 | 高 |
 | Android 页面绘制 | `Android/UI与渲染/Android页面绘制.md` | View 三大流程（measure/layout/draw）、三进程架构类关系、VSync 渲染流水线、BufferQueue 机制、Fence 同步、Buffer Holding、8 道面试题 | 高 |
+| Binder 机制 | `Android/Framework/Binder机制.md` | 设计动机与 Linux IPC 对比、四层架构、mmap 一次拷贝原理（binder_mmap/binder_transaction 源码）、通信全流程调用链、AIDL Stub/Proxy 生成代码分析、ServiceManager bootstrap 机制、Binder 线程池、TransactionTooLargeException 深度分析、DeathRecipient 死亡通知、IPC 方式对比、11 道面试题 | 高 |
+| 事件分发机制 | `Android/UI与渲染/事件分发机制.md` | 输入系统全链路（硬件→InputDispatcher→ViewRootImpl）、Activity/ViewGroup/View 三层分发源码、mFirstTouchTarget 链表、onInterceptTouchEvent 调用时机、滑动冲突解决（外部拦截/内部拦截/NestedScrolling）、多点触摸分发、9 道面试题 | 高 |
 | 技能图谱 | `Android/技能图谱.md` | 十一大章节的完整大纲（含端侧AI与大模型），5/7/10 年能力分层参考 | 完整（持续更新索引） |
 
 ## 历史遗留文档（已迁移为 Markdown）
@@ -32,8 +34,8 @@
 
 ### 高优先级（大纲核心章节，尚无文档）
 
-- [ ] Binder 机制（IPC 核心，面试极高频）
-- [ ] 事件分发机制（UI 核心，面试极高频）
+- [x] Binder 机制（IPC 核心，面试极高频）
+- [x] 事件分发机制（UI 核心，面试极高频）
 - [ ] RecyclerView 缓存机制（面试高频）
 - [ ] Kotlin 协程原理（挂起函数、调度器、结构化并发）
 - [ ] Activity 生命周期与启动模式

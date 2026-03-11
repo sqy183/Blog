@@ -1,0 +1,63 @@
+graph TB
+subgraph AppLayer["Application Layer"]
+    AIDL["AIDL 接口定义<br/>.aidl 文件"]
+    ClientCode["Client 业务代码"]
+    ServerCode["Server 业务实现"]
+end
+
+subgraph JavaLayer["Java Framework Layer"]
+    Proxy["IXxx.Stub.Proxy<br/>（Client 端代理）"]
+    Stub["IXxx.Stub<br/>（Server 端骨架）"]
+    BinderProxy["BinderProxy<br/>frameworks/.../os/BinderProxy.java"]
+    JavaBinder["Binder<br/>frameworks/.../os/Binder.java"]
+    SM_Java["ServiceManager<br/>frameworks/.../os/ServiceManager.java"]
+end
+
+subgraph NativeLayer["Native Layer (C++)"]
+    BpBinder["BpBinder<br/>（Client 端 Native 代理）"]
+    BBinder["BBinder<br/>（Server 端 Native 实体）"]
+    IPTS["IPCThreadState<br/>（线程级，管理 ioctl 通信）"]
+    PS["ProcessState<br/>（进程级单例，open+mmap）"]
+    SM_Native["ServiceManager<br/>(Native Daemon)"]
+end
+
+subgraph KernelLayer["Kernel Layer"]
+    Driver["/dev/binder 驱动"]
+    BP["binder_proc<br/>（每进程一个）"]
+    BT["binder_thread<br/>（每线程一个）"]
+    BN["binder_node<br/>（Server 端实体映射）"]
+    BR["binder_ref<br/>（Client 端引用映射）"]
+end
+
+ClientCode --> Proxy
+Proxy --> BinderProxy
+BinderProxy -->|"JNI"| BpBinder
+BpBinder --> IPTS
+IPTS -->|"ioctl(BINDER_WRITE_READ)"| Driver
+
+Driver --> IPTS
+IPTS --> BBinder
+BBinder -->|"JNI"| JavaBinder
+JavaBinder --> Stub
+Stub --> ServerCode
+
+SM_Java -->|"JNI"| SM_Native
+SM_Native --> Driver
+
+PS -->|"open(/dev/binder)"| Driver
+PS -->|"mmap()"| Driver
+
+Driver --> BP
+BP --> BT
+BP --> BN
+BP --> BR
+
+classDef appLayer fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+classDef javaLayer fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+classDef nativeLayer fill:#fff3e0,stroke:#e65100,stroke-width:2px
+classDef kernelLayer fill:#fce4ec,stroke:#b71c1c,stroke-width:2px
+
+class AIDL,ClientCode,ServerCode,AppLayer appLayer
+class Proxy,Stub,BinderProxy,JavaBinder,SM_Java,JavaLayer javaLayer
+class BpBinder,BBinder,IPTS,PS,SM_Native,NativeLayer nativeLayer
+class Driver,BP,BT,BN,BR,KernelLayer kernelLayer

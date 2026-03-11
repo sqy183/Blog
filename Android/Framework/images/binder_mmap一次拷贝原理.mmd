@@ -1,0 +1,30 @@
+graph LR
+subgraph ProcessA["Process A (Sender)"]
+    A_Data["用户空间<br/>数据缓冲区<br/>（Parcel data）"]
+end
+
+subgraph Kernel["Kernel Space"]
+    K_Buffer["内核缓冲区<br/>binder_alloc<br/>（物理页映射）"]
+end
+
+subgraph ProcessB["Process B (Receiver)"]
+    B_Mmap["用户空间<br/>mmap 映射区<br/>（binder_mmap 建立）"]
+end
+
+subgraph Physical["Physical Memory"]
+    PhyPages["物理页<br/>（按需分配）"]
+end
+
+A_Data -->|"① copy_from_user()<br/>【唯一一次拷贝】"| K_Buffer
+K_Buffer -.->|"② 内核虚拟地址<br/>指向物理页"| PhyPages
+B_Mmap -.->|"③ 用户虚拟地址<br/>mmap 映射同一物理页"| PhyPages
+
+classDef sender fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+classDef kernel fill:#fff3e0,stroke:#e65100,stroke-width:2px
+classDef receiver fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+classDef physical fill:#fce4ec,stroke:#b71c1c,stroke-width:2px
+
+class A_Data,ProcessA sender
+class K_Buffer,Kernel kernel
+class B_Mmap,ProcessB receiver
+class PhyPages,Physical physical

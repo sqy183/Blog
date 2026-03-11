@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant A as Activity
+    participant VG as 外层 ViewGroup<br/>(如 ScrollView)
+    participant V as 子 View<br/>(如 Button)
+
+    Note over A,V: === ACTION_DOWN ===
+    A->>VG: dispatchTouchEvent(DOWN)
+    VG->>VG: onInterceptTouchEvent(DOWN) → false
+    VG->>V: child.dispatchTouchEvent(DOWN)
+    V->>V: onTouchEvent(DOWN) → true
+    V-->>VG: return true
+    Note over VG: mFirstTouchTarget = View
+
+    Note over A,V: === ACTION_MOVE (VG 决定拦截) ===
+    A->>VG: dispatchTouchEvent(MOVE)
+    VG->>VG: onInterceptTouchEvent(MOVE) → true (拦截!)
+    Note over VG: 发现需要拦截
+    VG->>V: dispatchTouchEvent(ACTION_CANCEL)
+    Note over V: 收到 CANCEL<br/>释放按压状态/取消长按
+    V-->>VG: return
+    Note over VG: 清除 mFirstTouchTarget = null
+
+    Note over A,V: === 后续 ACTION_MOVE / UP ===
+    A->>VG: dispatchTouchEvent(MOVE)
+    Note over VG: mFirstTouchTarget == null<br/>不再调用 onInterceptTouchEvent()
+    VG->>VG: onTouchEvent(MOVE) → 自己处理 (滚动)
+
+    A->>VG: dispatchTouchEvent(UP)
+    VG->>VG: onTouchEvent(UP) → 自己处理 (惯性滚动)

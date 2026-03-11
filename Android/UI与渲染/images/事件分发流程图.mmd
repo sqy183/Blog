@@ -1,0 +1,45 @@
+flowchart TD
+    Start["触摸事件产生<br/>(InputManagerService)"] --> HW["硬件中断 → InputReader<br/>读取 /dev/input/eventX"]
+    HW --> ID["InputDispatcher<br/>查找目标窗口"]
+    ID --> SC["Socket Channel<br/>跨进程传递事件"]
+    SC --> VRI["ViewRootImpl<br/>.WindowInputEventReceiver"]
+    VRI --> DV["DecorView<br/>dispatchTouchEvent()"]
+
+    DV --> AG{"Activity<br/>dispatchTouchEvent()"}
+    AG -->|"调用"| WD["PhoneWindow<br/>superDispatchTouchEvent()"]
+    WD --> DV2["DecorView<br/>super.dispatchTouchEvent()"]
+    DV2 --> VG1["根 ViewGroup<br/>dispatchTouchEvent()"]
+
+    VG1 --> INT1{"onInterceptTouchEvent()<br/>是否拦截?"}
+    INT1 -->|"true: 拦截"| VG1_OTE["ViewGroup 自己处理<br/>onTouchEvent()"]
+    INT1 -->|"false: 不拦截"| CHILD{"遍历子 View<br/>(倒序, z-order 高的优先)"}
+
+    CHILD --> HIT{"命中测试<br/>点击区域包含子 View?"}
+    HIT -->|"命中"| CDIST["child.dispatchTouchEvent()"]
+    HIT -->|"未命中 / 无子 View"| VG1_OTE
+
+    CDIST --> CTYPE{"子 View 类型?"}
+    CTYPE -->|"ViewGroup"| VG2["子 ViewGroup<br/>重复上述流程"]
+    CTYPE -->|"View"| VOTE["View.onTouchEvent()"]
+
+    VOTE --> VRET{"返回 true?<br/>(消费事件)"}
+    VRET -->|"true: 已消费"| END_C["事件处理完毕<br/>后续事件直达该 View"]
+    VRET -->|"false: 未消费"| PARENT["回传父 ViewGroup<br/>onTouchEvent()"]
+
+    VG1_OTE --> VG1_RET{"返回 true?"}
+    VG1_RET -->|"true"| END_C
+    VG1_RET -->|"false"| ACT_OTE["Activity<br/>onTouchEvent()"]
+
+    PARENT --> VG1_RET
+
+    classDef system fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef viewgroup fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef view fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef decision fill:#fce4ec,stroke:#b71c1c,stroke-width:2px
+    classDef endpoint fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+
+    class Start,HW,ID,SC,VRI system
+    class DV,DV2,VG1,VG2,WD,VG1_OTE viewgroup
+    class VOTE,CDIST view
+    class INT1,CHILD,HIT,CTYPE,VRET,VG1_RET,AG decision
+    class END_C,ACT_OTE,PARENT endpoint

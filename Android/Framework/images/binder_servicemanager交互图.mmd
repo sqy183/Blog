@@ -1,0 +1,19 @@
+sequenceDiagram
+participant S as Server Process<br/>(如 SystemServer)
+participant SM as ServiceManager<br/>(handle=0)
+participant C as Client Process<br/>(如 App)
+
+Note over S,SM: 阶段1: 服务注册
+S->>S: 创建 Binder 实体<br/>(如 new ActivityManagerService())
+S->>SM: addService("activity", binder)<br/>[Binder IPC: BC_TRANSACTION]
+SM->>SM: 记录: name="activity"<br/>→ binder_node 映射
+
+Note over C,SM: 阶段2: 服务查询
+C->>SM: getService("activity")<br/>[Binder IPC: BC_TRANSACTION]
+SM->>SM: 查找 name="activity"<br/>→ 创建 binder_ref
+SM-->>C: 返回 BinderProxy<br/>(指向 Server 的 binder_ref)
+
+Note over C,S: 阶段3: 直接通信（不再经过 ServiceManager）
+C->>C: IActivityManager.Stub.asInterface(binder)<br/>→ 返回 Proxy 对象
+C->>S: proxy.startActivity(...)<br/>[Binder IPC: 直接 Client → Server]
+S-->>C: 返回结果
