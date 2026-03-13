@@ -14,7 +14,9 @@
 | Android 页面绘制 | `Android/UI与渲染/Android页面绘制.md` | View 三大流程（measure/layout/draw）、三进程架构类关系、VSync 渲染流水线、BufferQueue 机制、Fence 同步、Buffer Holding、8 道面试题 | 高 |
 | Binder 机制 | `Android/Framework/Binder机制.md` | 设计动机与 Linux IPC 对比、四层架构、mmap 一次拷贝原理（binder_mmap/binder_transaction 源码）、通信全流程调用链、AIDL Stub/Proxy 生成代码分析、ServiceManager bootstrap 机制、Binder 线程池、TransactionTooLargeException 深度分析、DeathRecipient 死亡通知、IPC 方式对比、11 道面试题 | 高 |
 | 事件分发机制 | `Android/UI与渲染/事件分发机制.md` | 输入系统全链路（硬件→InputDispatcher→ViewRootImpl）、Activity/ViewGroup/View 三层分发源码、mFirstTouchTarget 链表、onInterceptTouchEvent 调用时机、滑动冲突解决（外部拦截/内部拦截/NestedScrolling）、多点触摸分发、9 道面试题 | 高 |
+| RecyclerView 缓存机制 | `Android/UI与渲染/RecyclerView缓存机制.md` | 架构哲学与组件解耦、四级缓存机制源码分析、缓存查找与回收流程、LayoutManager 与 Recycler 交互（fill/scrollBy）、ItemDecoration/ItemAnimator/SnapHelper、DiffUtil Myers 算法与 AsyncListDiffer 线程模型、性能优化实战（stableIds/payloads/共享 Pool/Prefetch 调优）、RV vs LV 对比、10 道面试题 | 高 |
 | 技能图谱 | `Android/技能图谱.md` | 十一大章节的完整大纲（含端侧AI与大模型），5/7/10 年能力分层参考 | 完整（持续更新索引） |
+
 
 ## 历史遗留文档（已迁移为 Markdown）
 
@@ -36,7 +38,7 @@
 
 - [x] Binder 机制（IPC 核心，面试极高频）
 - [x] 事件分发机制（UI 核心，面试极高频）
-- [ ] RecyclerView 缓存机制（面试高频）
+- [x] RecyclerView 缓存机制（面试高频）
 - [ ] Kotlin 协程原理（挂起函数、调度器、结构化并发）
 - [ ] Activity 生命周期与启动模式
 - [ ] 内存泄漏与内存优化
@@ -74,3 +76,4 @@
 - 不使用 emoji（技能图谱中 📄 索引标记除外）
 - 文档要求使用 Markdown 格式，不使用 HTML
 - 复杂流程图使用 SVG 矢量图（Mermaid 源码 → mmdc 渲染），不要用 ASCII 硬画复杂图；简单线性调用链可用 ASCII
+- **输出大小控制**：由于服务端流式传输限制，对于内容极长（预计超过 300 行）或需要大幅修改的文档，**必须分段生成或采用增量写入模式（replace_file_content）**，严禁在一次回复中尝试输出过大的代码块/文档，以防 `unexpected EOF` 连接超时错误。

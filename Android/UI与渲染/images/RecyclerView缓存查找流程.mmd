@@ -1,0 +1,33 @@
+flowchart TD
+    Start["LayoutManager 请求 View<br/>getViewForPosition(position)"] --> Step1{"isPreLayout?"}
+
+    Step1 -->|"是"| CS["从 mChangedScrap<br/>按 position 查找"]
+    CS -->|"命中"| HIT_CS["返回 ViewHolder<br/>（无需 rebind）"]
+    CS -->|"未命中"| Step2
+
+    Step1 -->|"否"| Step2{"从 mAttachedScrap<br/>按 position 查找"}
+    Step2 -->|"命中"| HIT_AS["返回 ViewHolder<br/>（无需 rebind）"]
+
+    Step2 -->|"未命中"| Step3{"从 mCachedViews<br/>按 position 查找"}
+    Step3 -->|"命中"| HIT_CV["返回 ViewHolder<br/>（无需 rebind）"]
+
+    Step3 -->|"未命中"| Step3b{"ViewCacheExtension<br/>自定义缓存查找"}
+    Step3b -->|"命中"| HIT_VCE["返回 ViewHolder"]
+    Step3b -->|"未命中 / 未设置"| Step4
+
+    Step4{"从 RecycledViewPool<br/>按 viewType 查找"} -->|"命中"| HIT_POOL["返回 ViewHolder<br/>（必须 rebind）"]
+    Step4 -->|"未命中"| Step5["调用 onCreateViewHolder<br/>创建全新 ViewHolder"]
+    Step5 --> BINDCHECK{"需要绑定数据？"}
+    HIT_POOL --> BINDCHECK
+    BINDCHECK -->|"是"| BINDCALL["调用 onBindViewHolder"]
+    BINDCHECK -->|"否"| RETURN["返回 itemView"]
+    BINDCALL --> RETURN
+
+    style Start fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style HIT_CS fill:#27AE60,stroke:#1E8449,color:#fff
+    style HIT_AS fill:#27AE60,stroke:#1E8449,color:#fff
+    style HIT_CV fill:#27AE60,stroke:#1E8449,color:#fff
+    style HIT_VCE fill:#27AE60,stroke:#1E8449,color:#fff
+    style HIT_POOL fill:#F39C12,stroke:#D68910,color:#fff
+    style Step5 fill:#E74C3C,stroke:#C0392B,color:#fff
+    style RETURN fill:#8E44AD,stroke:#6C3483,color:#fff

@@ -1,0 +1,31 @@
+flowchart TD
+    Start["View 滑出屏幕 / 被移除<br/>recycleViewHolderInternal(holder)"] --> Check1{"holder.isRecyclable()?"}
+
+    Check1 -->|"否"| DISCARD["不缓存，直接丢弃"]
+
+    Check1 -->|"是"| Check2{"holder 是否有<br/>INVALID / REMOVED / UPDATE 标记?"}
+
+    Check2 -->|"无标记（有效且位置未变）"| Check3{"mCachedViews 已满?<br/>（默认上限 2）"}
+
+    Check3 -->|"未满"| ACTION_CV["追加到 mCachedViews 末尾<br/>保留 position + 数据"]
+
+    Check3 -->|"已满"| EVICT["FIFO 淘汰：将 index=0 的<br/>最老 ViewHolder 移到 Pool"]
+    EVICT --> EVICT_POOL{"Pool 对应 viewType<br/>已满?（默认 5）"}
+    EVICT_POOL -->|"未满"| EVICT_IN["旧 holder 进入 Pool<br/>resetInternal() 清除数据"]
+    EVICT_POOL -->|"已满"| EVICT_DROP["旧 holder 被 GC 回收"]
+    EVICT_IN --> ACTION_CV2["当前 holder 进入 mCachedViews"]
+    EVICT_DROP --> ACTION_CV2
+
+    Check2 -->|"有标记"| POOL{"直接进入 RecycledViewPool"}
+    POOL --> POOL_CHECK{"Pool 对应 viewType<br/>已满?"}
+    POOL_CHECK -->|"未满"| POOL_IN["进入 Pool<br/>resetInternal() 清除数据"]
+    POOL_CHECK -->|"已满"| POOL_DROP["被 GC 回收"]
+
+    style Start fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    style ACTION_CV fill:#27AE60,stroke:#1E8449,color:#fff
+    style ACTION_CV2 fill:#27AE60,stroke:#1E8449,color:#fff
+    style EVICT_IN fill:#F39C12,stroke:#D68910,color:#fff
+    style POOL_IN fill:#F39C12,stroke:#D68910,color:#fff
+    style DISCARD fill:#E74C3C,stroke:#C0392B,color:#fff
+    style EVICT_DROP fill:#E74C3C,stroke:#C0392B,color:#fff
+    style POOL_DROP fill:#E74C3C,stroke:#C0392B,color:#fff
