@@ -30,7 +30,7 @@
 
 ## 待建设的重点领域
 
-按技能图谱优先级排序（用户关注 Android 方向）：
+按技能图谱优先级排序：
 
 ### 高优先级（大纲核心章节，尚无文档）
 
@@ -40,6 +40,7 @@
 - [ ] Kotlin 协程原理（挂起函数、调度器、结构化并发）
 - [ ] Activity 生命周期与启动模式
 - [ ] 内存泄漏与内存优化
+- [ ] 核心系统服务：WMS 与 PMS 核心原理
 
 ### 中优先级
 
@@ -50,16 +51,19 @@
 - [ ] MVC → MVP → MVVM → MVI 架构演进
 - [ ] Gradle 构建流程
 - [ ] ANR 原理与分析
+- [ ] 动态化 UI：Server-Driven UI 服务端下发机制与原生架构
+- [ ] 研发规范：基于 AST 的自定义质量防线与 Lint 检查
 
 ### 低优先级（可后续补充）
 
 - [ ] Jetpack Compose 原理
-- [ ] 跨平台（KMP / Flutter）
+- [ ] 跨平台技术与多端融合实践（KMP / Flutter / HarmonyOS NEXT）
 - [ ] 签名机制
-- [ ] ART 虚拟机
+- [ ] ART 虚拟机原理
 - [ ] JNI/NDK 基础
-- [ ] 端侧 AI 推理框架（TFLite / MNN / ONNX Runtime）
-- [ ] 端侧大模型实践（Gemini Nano / 模型优化 / 内存管理）
+- [ ] 端侧 AI 推理框架与大模型实践（TFLite / Gemini Nano 等）
+- [ ] 逆向与防御：脱壳加壳机制及 Hook 技术探讨
+- [ ] 极限场景分析：深水区内存防爆与复杂 IO 读写策略
 
 ## 用户偏好备忘
 
