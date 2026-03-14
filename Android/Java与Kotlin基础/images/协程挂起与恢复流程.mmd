@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant Caller as "调用方"
+    participant SM as "状态机 (Continuation)"
+    participant Dispatcher as "Dispatcher"
+    participant Thread as "工作线程"
+    
+    Caller->>SM: 调用 suspend fun (label=0)
+    SM->>SM: fetchToken(sm) — 传入自身作为续体
+    SM-->>Caller: 返回 COROUTINE_SUSPENDED
+    Note over Caller: 调用方线程被释放<br/>可执行其他协程
+
+    Thread->>SM: token 就绪, 调用 resumeWith(token)
+    SM->>Dispatcher: dispatch(continuation)
+    Dispatcher->>Thread: 调度到目标线程
+    Thread->>SM: invokeSuspend(token) — label=1
+    SM->>SM: fetchData(token, sm)
+    SM-->>Thread: 返回 COROUTINE_SUSPENDED
+    Note over Thread: 线程再次被释放
+
+    Thread->>SM: data 就绪, 调用 resumeWith(data)
+    SM->>Dispatcher: dispatch(continuation)
+    Dispatcher->>Thread: 调度到目标线程
+    Thread->>SM: invokeSuspend(data) — label=2
+    SM-->>Caller: 返回最终结果 "Result: data"

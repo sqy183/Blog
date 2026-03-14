@@ -1,0 +1,35 @@
+graph LR
+    subgraph StateFlow ["StateFlow"]
+        SF_Init["初始值: 必须提供"]
+        SF_Replay["replay = 1"]
+        SF_Dedup["内置去重 distinctUntilChanged"]
+        SF_Conflate["confluent: 只保留最新值"]
+        SF_Value["value 属性: 随时读取当前值"]
+    end
+
+    subgraph SharedFlow ["SharedFlow"]
+        SHF_Init["初始值: 无"]
+        SHF_Replay["replay: 可配置 (0, 1, N)"]
+        SHF_Buffer["extraBufferCapacity: 额外缓冲"]
+        SHF_Overflow["onBufferOverflow: SUSPEND / DROP_OLDEST / DROP_LATEST"]
+        SHF_NoValue["无 value 属性"]
+    end
+
+    subgraph Scenarios ["适用场景"]
+        S1["UI 状态 (ViewModel → UI)"]
+        S2["一次性事件 (Toast/导航)"]
+        S3["事件广播 (多订阅者)"]
+        S4["传感器/位置数据流"]
+    end
+
+    StateFlow -->|"推荐"| S1
+    SharedFlow -->|"推荐"| S2
+    SharedFlow -->|"推荐"| S3
+    StateFlow -->|"推荐"| S4
+
+    Note["StateFlow 本质上是<br/>SharedFlow(replay=1,<br/>DROP_OLDEST)<br/>+ distinctUntilChanged<br/>+ 初始值"]
+
+    style StateFlow fill:#e3f2fd,stroke:#1565c0,color:#333
+    style SharedFlow fill:#fff3e0,stroke:#ef6c00,color:#333
+    style Scenarios fill:#f3e5f5,stroke:#7b1fa2,color:#333
+    style Note fill:#e8f5e9,stroke:#388e3c,color:#333

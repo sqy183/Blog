@@ -1,0 +1,28 @@
+graph TD
+    subgraph Scope ["CoroutineScope (viewModelScope)"]
+        ParentJob["SupervisorJob<br/>(父 Job)"]
+        
+        subgraph Children ["子协程"]
+            Child1["launch { fetchUser() }<br/>Job #1"]
+            Child2["launch { fetchOrders() }<br/>Job #2"]
+            Child3["launch { fetchStats() }<br/>Job #3"]
+        end
+    end
+
+    ParentJob -->|"父 → 子: cancel() 向下传播"| Child1
+    ParentJob -->|"父 → 子: cancel() 向下传播"| Child2
+    ParentJob -->|"父 → 子: cancel() 向下传播"| Child3
+
+    Child2 -.->|"普通 Job: 异常向上传播<br/>取消父 → 取消所有兄弟"| ParentJob
+    
+    style ParentJob fill:#4a90d9,stroke:#2c6fbb,color:#fff
+    style Child1 fill:#50c878,stroke:#3a9a5c,color:#fff
+    style Child2 fill:#ff6b6b,stroke:#cc5555,color:#fff
+    style Child3 fill:#50c878,stroke:#3a9a5c,color:#fff
+
+    Note1["SupervisorJob 模式下:<br/>Child2 异常 ✗ 不传播给父<br/>Child1, Child3 不受影响"]
+    
+    Note2["普通 Job 模式下:<br/>Child2 异常 → 取消父 Job<br/>→ 取消 Child1, Child3"]
+
+    style Note1 fill:#e8f5e9,stroke:#4caf50,color:#333
+    style Note2 fill:#ffebee,stroke:#f44336,color:#333

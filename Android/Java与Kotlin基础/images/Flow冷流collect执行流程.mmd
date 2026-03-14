@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant Source as "flow { } 源"
+    participant Map as "map 操作符"
+    participant Filter as "filter 操作符"
+    participant Collector as "collect { } 终端"
+
+    Collector->>Filter: collect(collector)
+    Filter->>Map: collect(filterCollector)
+    Map->>Source: collect(mapCollector)
+
+    Note over Source: flow 块开始执行
+
+    Source->>Map: emit(rawValue)
+    Map->>Map: transform(rawValue)
+    Map->>Filter: emit(mappedValue)
+    Filter->>Filter: predicate(mappedValue)
+    alt predicate = true
+        Filter->>Collector: emit(mappedValue)
+        Collector->>Collector: 处理 value
+    else predicate = false
+        Note over Filter: 值被过滤，不向下传递
+    end
+
+    Source->>Map: emit(rawValue2)
+    Map->>Map: transform(rawValue2)
+    Map->>Filter: emit(mappedValue2)
+    Filter->>Collector: emit(mappedValue2)
+    Collector->>Collector: 处理 value2
+
+    Note over Source: flow 块结束
+    Note over Collector: collect 返回
