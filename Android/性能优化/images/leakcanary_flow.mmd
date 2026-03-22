@@ -1,0 +1,18 @@
+flowchart TD
+    A["Activity.onDestroy()<br/>Fragment.onDestroyView()"] --> B["ObjectWatcher.expectWeaklyReachable()"]
+    B --> C["创建 WeakReference<br/>关联 ReferenceQueue<br/>生成唯一 key 存入 watchedObjects Map"]
+    C --> D["等待 5 秒"]
+    D --> E{"检查 ReferenceQueue<br/>WeakRef 是否已入队？"}
+    E -- "已入队" --> F["对象已被 GC 回收<br/>未泄漏 ✓"]
+    E -- "未入队" --> G["手动触发 GC<br/>Runtime.gc()"]
+    G --> H{"再次检查<br/>ReferenceQueue"}
+    H -- "已入队" --> F
+    H -- "仍未入队" --> I["判定为泄漏!"]
+    I --> J["Debug.dumpHprofData()<br/>生成 Heap Dump (.hprof)"]
+    J --> K["Shark 引擎分析 .hprof"]
+    K --> L["反向 BFS 搜索<br/>泄漏对象 → GC Root<br/>找到最短引用路径"]
+    L --> M["展示泄漏报告<br/>通知 + UI 界面"]
+
+    style F fill:#4CAF50,color:#fff
+    style I fill:#f44336,color:#fff
+    style M fill:#2196F3,color:#fff

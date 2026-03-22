@@ -1,0 +1,19 @@
+flowchart TD
+    A["用户/应用商店触发安装"] --> B["PackageInstaller<br/>创建安装会话 Session"]
+    B --> C["Session.commit()"]
+    C --> D["PMS InstallPackageHandler"]
+    
+    D --> E["1. 拷贝 APK<br/>→ /data/app/pkg/"]
+    E --> F["2. 解析 AndroidManifest.xml<br/>PackageParser.parsePackage()"]
+    F --> G["3. 签名验证<br/>v4 → v3 → v2 → v1"]
+    G --> H{"签名有效？"}
+    H -- "否" --> I["安装失败<br/>INSTALL_PARSE_FAILED_NO_CERTIFICATES"]
+    H -- "是" --> J["4. 检查权限与兼容性<br/>minSdkVersion / 权限冲突"]
+    J --> K["5. dex2oat 优化<br/>DEX → .odex (机器码)"]
+    K --> L["6. 创建应用数据目录<br/>/data/data/pkg/"]
+    L --> M["7. 更新 packages.xml<br/>持久化包信息"]
+    M --> N["8. 发送广播<br/>ACTION_PACKAGE_ADDED"]
+    N --> O["安装完成"]
+
+    style I fill:#f44336,color:#fff
+    style O fill:#4CAF50,color:#fff

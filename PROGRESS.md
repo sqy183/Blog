@@ -17,6 +17,9 @@
 | RecyclerView 缓存机制 | `Android/UI与渲染/RecyclerView缓存机制.md` | 架构哲学与组件解耦、四级缓存机制源码分析、缓存查找与回收流程、LayoutManager 与 Recycler 交互（fill/scrollBy）、ItemDecoration/ItemAnimator/SnapHelper、DiffUtil Myers 算法与 AsyncListDiffer 线程模型、性能优化实战（stableIds/payloads/共享 Pool/Prefetch 调优）、RV vs LV 对比、10 道面试题 | 高 |
 | Kotlin 协程原理 | `Android/Java与Kotlin基础/Kotlin协程原理.md` | CPS 变换与状态机反编译、CoroutineScope/launch/async 启动流程、CoroutineScheduler 工作窃取与 IO/Default 共享线程池、Dispatchers.Main Handler 调度、Job 状态机与取消传播、SupervisorJob、异常处理两路径与 CEH 安装规则、Mutex/Channel/select、Android Scope 选型与 repeatOnLifecycle、10 道面试题 | 高 |
 | Kotlin Flow 深度解析 | `Android/Java与Kotlin基础/Kotlin Flow深度解析.md` | 冷流原理（SafeFlow/上下文保持/channelFlow/callbackFlow）、操作符套娃结构与 flatMap 系列、背压策略（buffer/conflate/collectLatest）、flowOn Channel 桥接原理、StateFlow/SharedFlow 内部实现与配置参数、异常处理（catch/retry/onCompletion）、stateIn 策略、Android 架构模式、Flow vs LiveData vs RxJava、10 道面试题 | 高 |
+| Activity 生命周期与启动模式 | `Android/Framework/Activity生命周期与启动模式.md` | 七大回调与状态机、ClientTransaction 驱动机制源码、TransactionExecutor 状态推进、onSaveInstanceState 时机变化、边界场景（跳转/Dialog/透明/Fragment/多窗口/配置变更/进程死亡）、五种启动模式对比与源码分析、Task 与 taskAffinity、Intent Flags 组合、10 道面试题 | 高 |
+| 内存泄漏与内存优化 | `Android/性能优化/内存泄漏与内存优化.md` | 进程内存模型、分代回收与 GC 类型、LMK 机制、7 种泄漏场景（Handler/匿名内部类/静态引用/监听器/WebView/集合）、LeakCanary 原理（WeakReference+ReferenceQueue+Shark）、Profiler/MAT/dumpsys、Bitmap 优化（inSampleSize/inBitmap/Hardware）、内存抖动与对象池、LruCache、Native 内存管理、OOM 分类与治理、KOOM 线上监控、10 道面试题 | 高 |
+| WMS 与 PMS 核心原理 | `Android/Framework/WMS与PMS核心原理.md` | WMS 架构与核心类、窗口类型与层级树、窗口添加流程源码、WindowToken 机制、窗口动画、PMS 开机扫描、APK 安装流程与签名验证(v1-v4)、dex2oat 编译、权限模型演进、Intent 解析机制、10 道面试题 | 高 |
 | 技能图谱 | `Android/技能图谱.md` | 十一大章节的完整大纲（含端侧AI与大模型），5/7/10 年能力分层参考 | 完整（持续更新索引） |
 
 
@@ -42,9 +45,9 @@
 - [x] 事件分发机制（UI 核心，面试极高频）
 - [x] RecyclerView 缓存机制（面试高频）
 - [x] Kotlin 协程原理（挂起函数、调度器、结构化并发）
-- [ ] Activity 生命周期与启动模式
-- [ ] 内存泄漏与内存优化
-- [ ] 核心系统服务：WMS 与 PMS 核心原理
+- [x] Activity 生命周期与启动模式
+- [x] 内存泄漏与内存优化
+- [x] 核心系统服务：WMS 与 PMS 核心原理
 
 ### 中优先级
 

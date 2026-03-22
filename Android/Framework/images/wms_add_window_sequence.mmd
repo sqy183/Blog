@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant App as 应用进程
+    participant VRI as ViewRootImpl
+    participant WMS as WMS (SystemServer)
+    participant SF as SurfaceFlinger
+
+    App->>VRI: WindowManager.addView(decorView, params)
+    activate VRI
+    VRI->>VRI: new ViewRootImpl()
+    VRI->>VRI: setView(decorView, attrs)
+    VRI->>VRI: requestLayout() [安排 performTraversals]
+
+    VRI->>WMS: IWindowSession.addToDisplayAsUser()
+    activate WMS
+    WMS->>WMS: 权限检查 (系统窗口需 SYSTEM_ALERT_WINDOW)
+    WMS->>WMS: Token 验证 (应用窗口需 ActivityRecord Token)
+    WMS->>WMS: new WindowState
+    WMS->>WMS: adjustWindowParamsLw() [策略调整]
+    WMS->>WMS: createSurfaceControl()
+    WMS->>WMS: openInputChannel() [输入事件通道]
+    WMS->>WMS: assignWindowLayers() [Z-Order 排序]
+    WMS-->>VRI: 返回 SurfaceControl + InputChannel
+    deactivate WMS
+
+    VRI->>VRI: performTraversals()
+    VRI->>VRI: measure → layout → draw
+    VRI->>SF: Surface.lockCanvas() / unlockCanvasAndPost()
+    SF->>SF: 合成所有 Layer 并送显
+    deactivate VRI

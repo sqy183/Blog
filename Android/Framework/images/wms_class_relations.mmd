@@ -1,0 +1,21 @@
+graph LR
+    subgraph 应用进程
+        Window["Window<br/>(PhoneWindow)"]
+        DecorView["DecorView"]
+        VRI["ViewRootImpl"]
+        Window --> DecorView
+        VRI --> DecorView
+    end
+
+    subgraph SystemServer
+        Session["Session<br/>(一个进程一个)"]
+        WS["WindowState<br/>(每个窗口一个)"]
+        WT["WindowToken<br/>(窗口令牌)"]
+        DC["DisplayContent<br/>(每块屏幕一个)"]
+        Session --> WS
+        WT --> WS
+        DC --> WT
+    end
+
+    VRI -- "IWindowSession<br/>(Binder)" --> Session
+    Session -- "IWindow<br/>(回调)" --> VRI
