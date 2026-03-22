@@ -13,9 +13,9 @@
 | 一 | Java / Kotlin 语言基础 | [Java与Kotlin基础](Android/Java与Kotlin基础/) |
 | 二 | Android Framework 层 | [Framework](Android/Framework/) |
 | 三 | UI 与渲染体系 | [UI与渲染](Android/UI与渲染/) |
-| 四 | Jetpack 与架构 | 待建设 |
+| 四 | Jetpack 与架构 | [Jetpack与架构](Android/Jetpack与架构/) |
 | 五 | 性能优化 | [性能优化](Android/性能优化/) |
-| 六 | 开源框架原理 | 待建设 |
+| 六 | 开源框架原理 | [开源框架原理](Android/开源框架原理/) |
 | 七 | 跨平台与新技术 | 待建设 |
 | 八 | 工程化与 DevOps | 待建设 |
 | 九 | Android 系统底层 | 待建设 |
@@ -36,6 +36,18 @@
 | Activity 生命周期与启动模式 | [Activity生命周期与启动模式.md](Android/Framework/Activity生命周期与启动模式.md) | 七大回调与状态机、边界场景、五种启动模式、Task 与 Intent Flags、10 道面试题 |
 | 内存泄漏与内存优化 | [内存泄漏与内存优化.md](Android/性能优化/内存泄漏与内存优化.md) | 内存管理机制、7 种泄漏场景、LeakCanary 原理、Bitmap 优化、OOM 治理、10 道面试题 |
 | WMS 与 PMS 核心原理 | [WMS与PMS核心原理.md](Android/Framework/WMS与PMS核心原理.md) | 窗口类型与层级、窗口添加流程、Token 机制、APK 安装、权限管理、Intent 解析、10 道面试题 |
+
+### Jetpack 与架构
+
+| 文档 | 路径 | 核心内容 |
+|------|------|---------|
+| ViewModel 数据保持原理 | [ViewModel数据保持原理.md](Android/Jetpack与架构/ViewModel数据保持原理.md) | NonConfigurationInstances 存活机制、ViewModelStore/ViewModelProvider 源码、Factory 体系、SavedStateHandle、Fragment 共享、8 道面试题 |
+
+### 开源框架原理
+
+| 文档 | 路径 | 核心内容 |
+|------|------|---------|
+| OkHttp 拦截器链原理 | [OkHttp拦截器链原理.md](Android/开源框架原理/OkHttp拦截器链原理.md) | 责任链模式、5 大内置拦截器、连接池复用、Application vs Network Interceptor、8 道面试题 |
 
 ### 计算机基础
 

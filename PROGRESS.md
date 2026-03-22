@@ -21,6 +21,8 @@
 | 内存泄漏与内存优化 | `Android/性能优化/内存泄漏与内存优化.md` | 进程内存模型、分代回收与 GC 类型、LMK 机制、7 种泄漏场景（Handler/匿名内部类/静态引用/监听器/WebView/集合）、LeakCanary 原理（WeakReference+ReferenceQueue+Shark）、Profiler/MAT/dumpsys、Bitmap 优化（inSampleSize/inBitmap/Hardware）、内存抖动与对象池、LruCache、Native 内存管理、OOM 分类与治理、KOOM 线上监控、10 道面试题 | 高 |
 | WMS 与 PMS 核心原理 | `Android/Framework/WMS与PMS核心原理.md` | WMS 架构与核心类、窗口类型与层级树、窗口添加流程源码、WindowToken 机制、窗口动画、PMS 开机扫描、APK 安装流程与签名验证(v1-v4)、dex2oat 编译、权限模型演进、Intent 解析机制、10 道面试题 | 高 |
 | 技能图谱 | `Android/技能图谱.md` | 十一大章节的完整大纲（含端侧AI与大模型），5/7/10 年能力分层参考 | 完整（持续更新索引） |
+| ViewModel 数据保持原理 | `Android/Jetpack与架构/ViewModel数据保持原理.md` | NonConfigurationInstances 存活机制、ViewModelStore/ViewModelProvider 源码、Factory 体系（CreationExtras）、SavedStateHandle 与 SavedStateRegistry、onCleared 时机、viewModelScope、Fragment 共享、8 道面试题 | 高 |
+| OkHttp 拦截器链原理 | `Android/开源框架原理/OkHttp拦截器链原理.md` | 责任链模式、RealInterceptorChain 源码、5 大内置拦截器详解、连接池复用、Application vs Network Interceptor、实战示例（Token/日志/刷新）、8 道面试题 | 高 |
 
 
 ## 历史遗留文档（已迁移为 Markdown）
@@ -51,9 +53,9 @@
 
 ### 中优先级
 
-- [ ] ViewModel 数据保持原理
+- [x] ViewModel 数据保持原理
 - [x] LiveData / Flow 对比
-- [ ] OkHttp 拦截器链原理
+- [x] OkHttp 拦截器链原理
 - [ ] Glide 缓存机制
 - [ ] MVC → MVP → MVVM → MVI 架构演进
 - [ ] Gradle 构建流程
