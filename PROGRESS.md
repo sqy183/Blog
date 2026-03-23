@@ -23,6 +23,7 @@
 | 技能图谱 | `Android/技能图谱.md` | 十一大章节的完整大纲（含端侧AI与大模型），5/7/10 年能力分层参考 | 完整（持续更新索引） |
 | ViewModel 数据保持原理 | `Android/Jetpack与架构/ViewModel数据保持原理.md` | NonConfigurationInstances 存活机制、ViewModelStore/ViewModelProvider 源码、Factory 体系（CreationExtras）、SavedStateHandle 与 SavedStateRegistry、onCleared 时机、viewModelScope、Fragment 共享、8 道面试题 | 高 |
 | OkHttp 拦截器链原理 | `Android/开源框架原理/OkHttp拦截器链原理.md` | 责任链模式、RealInterceptorChain 源码、5 大内置拦截器详解、连接池复用、Application vs Network Interceptor、实战示例（Token/日志/刷新）、8 道面试题 | 高 |
+| Kotlin 语言特性深度解析 | `Android/Java与Kotlin基础/Kotlin语言特性深度解析.md` | 空安全（类型系统/平台类型/智能转换/Contracts）、扩展函数（字节码/静态分发/作用域函数5大对比）、密封类/数据类/值类/枚举对比、委托（by lazy DCL/observable/provideDelegate/自定义SP委托）、内联函数（inline/noinline/crossinline/reified）、DSL构建（Lambda with receiver/@DslMarker）、泛型型变（out/in/星投影/Java PECS对比）、10 道面试题 | 高 |
 
 
 ## 历史遗留文档（已迁移为 Markdown）
