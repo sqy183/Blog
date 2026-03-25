@@ -1,0 +1,25 @@
+graph LR
+    subgraph Put["put() 流程"]
+        A["计算 hash(key)"] --> B["定位 bucket index"]
+        B --> C{"bucket 为空?"}
+        C -->|"是"| D["直接插入新节点"]
+        C -->|"否"| E{"key 相同?"}
+        E -->|"是"| F["覆盖 value"]
+        E -->|"否"| G{"是红黑树?"}
+        G -->|"是"| H["红黑树插入"]
+        G -->|"否"| I["链表遍历插入"]
+        I --> J{"链表长度 >= 8?"}
+        J -->|"是"| K["链表转红黑树"]
+        J -->|"否"| L["插入完成"]
+        D --> M["检查扩容"]
+        F --> M
+        H --> M
+        K --> M
+        L --> M
+    end
+
+    style A fill:#e3f2fd
+    style D fill:#c8e6c9
+    style F fill:#c8e6c9
+    style H fill:#c8e6c9
+    style K fill:#ffccbc

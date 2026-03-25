@@ -1,0 +1,23 @@
+graph TB
+    subgraph Stack["虚拟机栈 (每个线程一个)"]
+        Frame1["栈帧1: methodA()"]
+        Frame2["栈帧2: methodB()"]
+        Frame3["栈帧3: methodC()"]
+    end
+
+    subgraph FrameStructure["栈帧内部结构"]
+        LV["局部变量表<br/>Local Variables<br/>[0]this [1]arg1 [2]arg2..."]
+        OS["操作数栈<br/>Operand Stack<br/>计算中间结果"]
+        DL["动态链接<br/>Dynamic Linking<br/>指向常量池方法引用"]
+        RA["返回地址<br/>Return Address<br/>方法退出恢复位置"]
+    end
+
+    Stack --> FrameStructure
+
+    style Frame1 fill:#e3f2fd
+    style Frame2 fill:#e3f2fd
+    style Frame3 fill:#bbdefb
+    style LV fill:#fff8e1
+    style OS fill:#fff8e1
+    style DL fill:#fff8e1
+    style RA fill:#fff8e1

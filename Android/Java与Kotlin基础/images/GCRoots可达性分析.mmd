@@ -1,0 +1,33 @@
+graph TB
+    subgraph GCRoots["GC Roots 可达性分析"]
+        Stack["虚拟机栈中的引用"]
+        Native["本地方法栈中的引用"]
+        Static["方法区中静态变量的引用"]
+        Const["方法区中常量的引用"]
+        Sync["同步锁持有的引用"]
+    end
+
+    subgraph Objects["对象图"]
+        A["对象 A"]
+        B["对象 B"]
+        C["对象 C"]
+        D["对象 D（不可达）"]
+        E["对象 E（不可达）"]
+    end
+
+    Stack --> A
+    Native --> B
+    Static --> A
+    A --> C
+    Const --> B
+
+    style Stack fill:#c8e6c9
+    style Native fill:#c8e6c9
+    style Static fill:#c8e6c9
+    style Const fill:#c8e6c9
+    style Sync fill:#c8e6c9
+    style A fill:#bbdefb
+    style B fill:#bbdefb
+    style C fill:#bbdefb
+    style D fill:#ffcdd2
+    style E fill:#ffcdd2

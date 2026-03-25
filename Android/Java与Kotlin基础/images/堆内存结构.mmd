@@ -1,0 +1,22 @@
+graph TB
+    subgraph Heap["Java 堆 (GC 主要区域)"]
+        subgraph Young["新生代 Young Generation (1/3)"]
+            Eden["Eden 区<br/>(8/10 新生代)"]
+            S0["Survivor 0<br/>(1/10 新生代)"]
+            S1["Survivor 1<br/>(1/10 新生代)"]
+        end
+        Old["老年代 Old Generation (2/3)"]
+    end
+
+    subgraph GCFlow["对象晋升流程"]
+        New["new 对象"] --> Eden
+        Eden -->|"GC 存活"| S0
+        S0 -->|"GC 存活 + 年龄+1"| S1
+        S1 -->|"年龄达到阈值<br/>或空间不足"| Old
+    end
+
+    style Eden fill:#c8e6c9
+    style S0 fill:#c8e6c9
+    style S1 fill:#c8e6c9
+    style Old fill:#ffccbc
+    style Young fill:#f1f8e9

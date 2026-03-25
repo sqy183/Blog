@@ -23,6 +23,11 @@
 | 技能图谱 | `Android/技能图谱.md` | 十一大章节的完整大纲（含端侧AI与大模型），5/7/10 年能力分层参考 | 完整（持续更新索引） |
 | ViewModel 数据保持原理 | `Android/Jetpack与架构/ViewModel数据保持原理.md` | NonConfigurationInstances 存活机制、ViewModelStore/ViewModelProvider 源码、Factory 体系（CreationExtras）、SavedStateHandle 与 SavedStateRegistry、onCleared 时机、viewModelScope、Fragment 共享、8 道面试题 | 高 |
 | OkHttp 拦截器链原理 | `Android/开源框架原理/OkHttp拦截器链原理.md` | 责任链模式、RealInterceptorChain 源码、5 大内置拦截器详解、连接池复用、Application vs Network Interceptor、实战示例（Token/日志/刷新）、8 道面试题 | 高 |
+| JVM 内存模型 | `Android/Java与Kotlin基础/JVM内存模型.md` | 运行时数据区（PC/栈/堆/方法区）、栈帧结构、堆内存划分与晋升、方法区演进（永久代→元空间）、直接内存、OOM 场景分析、与 Android ART 对比、7 道面试题 | 高 |
+| 垃圾回收机制 | `Android/Java与Kotlin基础/垃圾回收机制.md` | GC Roots 可达性分析、四种引用类型、三种收集算法、CMS/G1/ZGC 收集器对比、GC 日志分析、与 Android ART 对比、7 道面试题 | 高 |
+| HashMap 深度解析 | `Android/Java与Kotlin基础/HashMap深度解析.md` | 底层结构（数组+链表+红黑树）、put/get 流程、扩容机制、红黑树转换条件、线程安全问题、LinkedHashMap/TreeMap 变体、7 道面试题 | 高 |
+| 泛型深度解析 | `Android/Java与Kotlin基础/泛型深度解析.md` | 类型擦除机制、桥接方法、三种通配符、PECS 原则、泛型限制、TypeToken 模式、与 Kotlin 泛型对比、7 道面试题 | 高 |
+| 反射与注解深度解析 | `Android/Java与Kotlin基础/反射与注解深度解析.md` | 反射核心 API、动态代理（JDK/CGLIB）、注解机制、元注解、APT 编译时处理、KSP、7 道面试题 | 高 |
 | Kotlin 语言特性深度解析 | `Android/Java与Kotlin基础/Kotlin语言特性深度解析.md` | 空安全（类型系统/平台类型/智能转换/Contracts）、扩展函数（字节码/静态分发/作用域函数5大对比）、密封类/数据类/值类/枚举对比、委托（by lazy DCL/observable/provideDelegate/自定义SP委托）、内联函数（inline/noinline/crossinline/reified）、DSL构建（Lambda with receiver/@DslMarker）、泛型型变（out/in/星投影/Java PECS对比）、10 道面试题 | 高 |
 
 

@@ -1,0 +1,33 @@
+graph TB
+    subgraph HashMap["HashMap 内部结构"]
+        Table["Node<K,V>[] table"]
+        N0["Bucket 0"]
+        N1["Bucket 1"]
+        N2["Bucket 2"]
+        N3["Bucket 3"]
+        N4["Bucket n-1"]
+
+        K1["Key1 → Value1"]
+        K2["Key2 → Value2"]
+        K3["Key3 → Value3"]
+    end
+
+    Table --> N0
+    Table --> N1
+    Table --> N2
+    Table --> N3
+    Table --> N4
+
+    N0 --> K1
+    K1 --> K2
+    N2 --> K3
+
+    style Table fill:#e3f2fd
+    style N0 fill:#fff3e0
+    style N1 fill:#fff3e0
+    style N2 fill:#fff3e0
+    style N3 fill:#fff3e0
+    style N4 fill:#fff3e0
+    style K1 fill:#c8e6c9
+    style K2 fill:#c8e6c9
+    style K3 fill:#c8e6c9

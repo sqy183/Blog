@@ -1,0 +1,19 @@
+graph LR
+    subgraph Young["新生代"]
+        Eden["Eden"]
+        S0["Survivor 0"]
+        S1["Survivor 1"]
+    end
+
+    subgraph Old["老年代"]
+        OldGen["Old Generation"]
+    end
+
+    Eden -->|"Minor GC<br/>存活对象"| S0
+    S0 -->|"年龄达标"| OldGen
+    S0 -->|"交换"| S1
+
+    style Eden fill:#c8e6c9
+    style S0 fill:#c8e6c9
+    style S1 fill:#c8e6c9
+    style OldGen fill:#ffccbc

@@ -1,0 +1,33 @@
+graph TB
+    subgraph JVM["JVM 运行时数据区"]
+        subgraph Private["线程私有区域"]
+            PC["程序计数器<br/>Program Counter"]
+            VMS["虚拟机栈<br/>Java Virtual Machine Stack"]
+            NMS["本地方法栈<br/>Native Method Stack"]
+        end
+
+        subgraph Shared["线程共享区域"]
+            HEAP["堆 Heap"]
+            subgraph Young["新生代"]
+                Eden["Eden"]
+                S0["Survivor 0"]
+                S1["Survivor 1"]
+            end
+            Old["老年代 Old Generation"]
+
+            METHOD["方法区 Method Area"]
+            CONST["运行时常量池<br/>Runtime Constant Pool"]
+        end
+    end
+
+    HEAP --> Young
+    HEAP --> Old
+    METHOD --> CONST
+
+    style PC fill:#e1f5fe
+    style VMS fill:#e1f5fe
+    style NMS fill:#e1f5fe
+    style HEAP fill:#fff3e0
+    style METHOD fill:#fff3e0
+    style Private fill:#f5f5f5
+    style Shared fill:#fafafa
