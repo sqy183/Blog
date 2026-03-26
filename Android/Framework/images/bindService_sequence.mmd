@@ -1,0 +1,32 @@
+sequenceDiagram
+    autonumber
+    participant Client as 客户端进程
+    participant AMS as system_server<br/>(AMS/ActiveServices)
+    participant Service as Service 进程
+
+    Client->>AMS: bindService(intent, conn, flags)<br/>将 ServiceConnection 包装为<br/>IServiceConnection Binder
+
+    AMS->>AMS: retrieveServiceLocked()<br/>通过 PMS 解析 intent<br/>找到 ServiceRecord
+
+    alt Service 进程未启动
+        AMS->>Service: Zygote fork 进程<br/>attachApplication()
+    end
+
+    alt Service 未创建
+        AMS->>Service: scheduleCreateService()<br/>反射创建 Service 实例
+        Service->>Service: Service.onCreate()
+    end
+
+    AMS->>Service: scheduleBindService(intent)
+
+    Service->>Service: Service.onBind(intent)<br/>返回 IBinder 对象
+
+    Service->>AMS: publishService(token, intent, binder)<br/>将 IBinder 回传给 AMS
+
+    AMS->>AMS: publishServiceLocked()<br/>查找所有绑定该 Service<br/>的 ConnectionRecord
+
+    AMS->>Client: IServiceConnection.connected()<br/>通过 Binder 回调客户端
+
+    Client->>Client: Handler.post → 切到主线程<br/>ServiceConnection<br/>.onServiceConnected(name, binder)
+
+    Note over Client,Service: 此后客户端通过 IBinder 直接与 Service 通信（同进程直接调用，跨进程走 Binder）

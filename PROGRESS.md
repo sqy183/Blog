@@ -30,6 +30,9 @@
 | 泛型深度解析 | `Android/Java与Kotlin基础/泛型深度解析.md` | 类型擦除机制、桥接方法、三种通配符、PECS 原则、泛型限制、TypeToken 模式、与 Kotlin 泛型对比、7 道面试题 | 高 |
 | 反射与注解深度解析 | `Android/Java与Kotlin基础/反射与注解深度解析.md` | 反射核心 API、动态代理（JDK/CGLIB）、注解机制、元注解、APT 编译时处理、KSP、7 道面试题 | 高 |
 | Kotlin 语言特性深度解析 | `Android/Java与Kotlin基础/Kotlin语言特性深度解析.md` | 空安全（类型系统/平台类型/智能转换/Contracts）、扩展函数（字节码/静态分发/作用域函数5大对比）、密封类/数据类/值类/枚举对比、委托（by lazy DCL/observable/provideDelegate/自定义SP委托）、内联函数（inline/noinline/crossinline/reified）、DSL构建（Lambda with receiver/@DslMarker）、泛型型变（out/in/星投影/Java PECS对比）、10 道面试题 | 高 |
+| Service 深度解析 | `Android/Framework/Service深度解析.md` | startService/bindService 生命周期差异及源码调用链、onStartCommand 返回值策略、Bound Service 三种实现（Binder/Messenger/AIDL）、前台服务类型（Android 14+）、后台限制演进时间线（Android 6~15）、IntentService 废弃与替代方案对比、进程优先级与保活争议、WorkManager 对比、7 道面试题 | 高 |
+| BroadcastReceiver 深度解析 | `Android/Framework/BroadcastReceiver深度解析.md` | 静态/动态注册源码调用链、广播分发流程（AMS broadcastIntentLocked）、有序广播拦截机制、goAsync() 原理、Android 8.0+ 隐式广播限制及应对、各版本限制汇总、LocalBroadcastManager 废弃与 SharedFlow 替代、Android 13+ exported 标志、6 道面试题 | 高 |
+| ContentProvider 深度解析 | `Android/Framework/ContentProvider深度解析.md` | 极早的初始化时机（早于 Application.onCreate）、跨进程通信全流程（ContentResolver→AMS→Provider）、CursorWindow 共享内存传递、unstable/stable Provider、URI 路由与 UriMatcher、权限模型与临时 URI 授权、FileProvider、App Startup 合并初始化原理、ContentObserver 变更通知、6 道面试题 | 高 |
 
 
 ## 历史遗留文档（已迁移为 Markdown）

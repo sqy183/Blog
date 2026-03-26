@@ -1,0 +1,44 @@
+flowchart TD
+    A["sendBroadcast(intent) / sendOrderedBroadcast(intent)"] --> B["AMS.broadcastIntentLocked()"]
+
+    B --> C{"系统广播<br/>权限检查"}
+    C -->|"无权限"| C1["SecurityException"]
+    C -->|"通过"| D["处理特殊系统广播<br/>PACKAGE_REMOVED / UID_REMOVED 等"]
+
+    D --> E["查询匹配的 Receiver"]
+    E --> E1["PMS.queryIntentReceivers()<br/>查找静态注册 Receiver"]
+    E --> E2["mReceiverResolver.queryIntent()<br/>查找动态注册 Receiver"]
+
+    E1 --> F{"广播类型?"}
+    E2 --> F
+
+    F -->|"普通广播"| G["动态 Receiver → 并行队列<br/>mParallelBroadcasts"]
+    F -->|"普通广播"| H["静态 Receiver → 串行队列<br/>mOrderedBroadcasts"]
+    F -->|"有序广播"| I["动态 + 静态合并<br/>按 priority 排序<br/>全部进入串行队列"]
+
+    G --> J["并行分发<br/>几乎同时回调所有<br/>动态 Receiver.onReceive()"]
+
+    H --> K["串行分发"]
+    I --> K
+
+    K --> L["取队列头部 Receiver"]
+    L --> M{"Receiver 进程<br/>是否存活?"}
+    M -->|"否（静态注册）"| N["启动目标进程<br/>Zygote fork"]
+    N --> O["反射创建 Receiver 实例"]
+    M -->|"是"| O
+
+    O --> P["Receiver.onReceive()"]
+    P --> Q{"有序广播:<br/>abortBroadcast()?"}
+    Q -->|"是"| R["终止分发<br/>后续 Receiver 不再收到"]
+    Q -->|"否 / 普通广播"| S{"还有下一个<br/>Receiver?"}
+    S -->|"是"| L
+    S -->|"否"| T["广播分发完成"]
+    R --> U{"有 resultReceiver?"}
+    U -->|"是"| V["回调 resultReceiver"]
+    U -->|"否"| T
+    V --> T
+
+    style A fill:#4A90D9,color:#fff
+    style C1 fill:#D94A4A,color:#fff
+    style T fill:#5CB85C,color:#fff
+    style R fill:#F0AD4E,color:#fff

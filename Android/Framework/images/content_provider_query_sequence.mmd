@@ -1,0 +1,36 @@
+sequenceDiagram
+    autonumber
+    participant Client as 客户端进程
+    participant AMS as system_server<br/>(AMS)
+    participant Provider as Provider 进程
+
+    Client->>Client: contentResolver.query(uri, ...)
+    Client->>Client: acquireUnstableProvider(uri)<br/>先查本进程缓存 mProviderMap
+
+    alt 缓存未命中
+        Client->>AMS: AMS.getContentProvider(authority)
+        AMS->>AMS: getContentProviderImpl()<br/>检查 Provider 进程状态
+
+        alt Provider 进程未启动
+            AMS->>Provider: Zygote fork 进程
+            Provider->>Provider: handleBindApplication()<br/>installContentProviders()<br/>ContentProvider.onCreate()
+            Provider->>AMS: publishContentProviders()<br/>注册 IContentProvider Binder
+        end
+
+        AMS->>AMS: 权限检查<br/>readPermission / writePermission
+        AMS->>Client: 返回 ContentProviderHolder<br/>（含 IContentProvider Binder 代理）
+    end
+
+    Client->>Provider: IContentProvider.query(uri, ...)<br/>Binder 跨进程调用
+
+    Provider->>Provider: ContentProvider.Transport.query()<br/>→ ContentProvider.query()<br/>（Binder 线程池中执行）
+
+    Provider->>Provider: 查询底层数据源(SQLite/File)<br/>构建 Cursor + CursorWindow
+
+    Note over Client,Provider: CursorWindow 基于 ashmem 共享内存<br/>默认 2MB，避免大量数据走 Binder 拷贝
+
+    Provider->>Client: 返回 Cursor<br/>（CursorWindow 通过共享内存直接访问）
+
+    Client->>Client: 遍历 Cursor 读取数据<br/>（直接读共享内存，无需再跨进程）
+
+    Client->>Client: cursor.close()<br/>释放 CursorWindow 共享内存
