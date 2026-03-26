@@ -1,0 +1,22 @@
+graph TB
+    subgraph Cache["Glide 三级缓存"]
+        Active["ActiveResources<br/>活跃资源缓存<br/>（WeakReference Map）"]
+        Memory["MemoryCache<br/>内存缓存<br/>（LruCache）"]
+        Disk["DiskCache<br/>磁盘缓存<br/>（LruDiskCache）"]
+        Source["数据源<br/>Network / File / Asset"]
+    end
+
+    Request["图片请求"] --> Active
+    Active -->|"未命中"| Memory
+    Memory -->|"未命中"| Disk
+    Disk -->|"未命中"| Source
+
+    Active -->|"命中"| Return1["返回图片"]
+    Memory -->|"命中"| Return2["返回图片"]
+    Disk -->|"命中"| Return3["返回图片"]
+    Source -->|"加载"| Return4["返回图片"]
+
+    style Active fill:#c8e6c9
+    style Memory fill:#bbdefb
+    style Disk fill:#fff9c4
+    style Source fill:#ffccbc

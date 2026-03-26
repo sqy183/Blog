@@ -23,6 +23,7 @@
 | 技能图谱 | `Android/技能图谱.md` | 十一大章节的完整大纲（含端侧AI与大模型），5/7/10 年能力分层参考 | 完整（持续更新索引） |
 | ViewModel 数据保持原理 | `Android/Jetpack与架构/ViewModel数据保持原理.md` | NonConfigurationInstances 存活机制、ViewModelStore/ViewModelProvider 源码、Factory 体系（CreationExtras）、SavedStateHandle 与 SavedStateRegistry、onCleared 时机、viewModelScope、Fragment 共享、8 道面试题 | 高 |
 | OkHttp 拦截器链原理 | `Android/开源框架原理/OkHttp拦截器链原理.md` | 责任链模式、RealInterceptorChain 源码、5 大内置拦截器详解、连接池复用、Application vs Network Interceptor、实战示例（Token/日志/刷新）、8 道面试题 | 高 |
+| Glide 缓存机制 | `Android/开源框架原理/Glide缓存机制.md` | 三级缓存（ActiveResources/MemoryCache/DiskCache）、生命周期感知（无UIFragment）、BitmapPool 复用、缓存策略、与 Coil 对比、7 道面试题 | 高 |
 | JVM 内存模型 | `Android/Java与Kotlin基础/JVM内存模型.md` | 运行时数据区（PC/栈/堆/方法区）、栈帧结构、堆内存划分与晋升、方法区演进（永久代→元空间）、直接内存、OOM 场景分析、与 Android ART 对比、7 道面试题 | 高 |
 | 垃圾回收机制 | `Android/Java与Kotlin基础/垃圾回收机制.md` | GC Roots 可达性分析、四种引用类型、三种收集算法、CMS/G1/ZGC 收集器对比、GC 日志分析、与 Android ART 对比、7 道面试题 | 高 |
 | HashMap 深度解析 | `Android/Java与Kotlin基础/HashMap深度解析.md` | 底层结构（数组+链表+红黑树）、put/get 流程、扩容机制、红黑树转换条件、线程安全问题、LinkedHashMap/TreeMap 变体、7 道面试题 | 高 |
@@ -62,7 +63,7 @@
 - [x] ViewModel 数据保持原理
 - [x] LiveData / Flow 对比
 - [x] OkHttp 拦截器链原理
-- [ ] Glide 缓存机制
+- [x] Glide 缓存机制
 - [ ] MVC → MVP → MVVM → MVI 架构演进
 - [ ] Gradle 构建流程
 - [ ] ANR 原理与分析

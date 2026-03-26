@@ -1,0 +1,20 @@
+graph TB
+    subgraph Lifecycle["生命周期感知"]
+        Activity["Activity/Fragment"]
+        FM["SupportFragmentManager"]
+        FR["RequestManagerFragment<br/>无 UI Fragment"]
+        RM["RequestManager"]
+        Target["Target<Drawable>"]
+    end
+
+    Activity -->|"getSupportFragmentManager"| FM
+    FM -->|"findFragmentByTag"| FR
+    FR -->|"getRequestManager"| RM
+    RM -->|"load.into"| Target
+
+    FR -->|"onDestroy"| RM
+    RM -->|"clear"| Target
+
+    style FR fill:#ffccbc
+    style RM fill:#c8e6c9
+    style Target fill:#bbdefb
