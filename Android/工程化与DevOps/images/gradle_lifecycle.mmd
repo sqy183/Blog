@@ -1,0 +1,34 @@
+graph TD
+    Start([./gradlew assembleDebug]) --> Init
+
+    subgraph Phase1["阶段一：初始化 Initialization"]
+        Init["执行 settings.gradle.kts"] --> DetectProjects["确定参与构建的项目集合<br/>include ':app', ':lib:core'"]
+        DetectProjects --> CreateSettings["创建 Settings 实例<br/>+ 各 Project 实例"]
+    end
+
+    CreateSettings --> Config
+
+    subgraph Phase2["阶段二：配置 Configuration"]
+        Config["执行每个项目的<br/>build.gradle.kts"] --> ApplyPlugins["应用插件<br/>AGP / Kotlin / 自定义"]
+        ApplyPlugins --> ConfigTasks["创建 & 配置 Task 对象"]
+        ConfigTasks --> ResolveDeps["解析依赖声明"]
+        ResolveDeps --> BuildDAG["构建 Task DAG<br/>有向无环图"]
+    end
+
+    BuildDAG --> Exec
+
+    subgraph Phase3["阶段三：执行 Execution"]
+        Exec["按 DAG 拓扑序<br/>执行 Task"] --> CheckCache{"增量 / 缓存<br/>检查"}
+        CheckCache -->|"UP-TO-DATE<br/>输入未变"| Skip["跳过执行"]
+        CheckCache -->|"FROM-CACHE<br/>Build Cache 命中"| Restore["从缓存恢复输出"]
+        CheckCache -->|"需要执行"| Run["执行 Task Action"]
+        Run --> SaveCache["缓存 Task 输出"]
+    end
+
+    Skip --> Done([构建完成])
+    Restore --> Done
+    SaveCache --> Done
+
+    style Phase1 fill:#E8F5E9,stroke:#4CAF50
+    style Phase2 fill:#E3F2FD,stroke:#2196F3
+    style Phase3 fill:#FFF3E0,stroke:#FF9800

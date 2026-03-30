@@ -1,0 +1,12 @@
+graph LR
+    User((用户操作)) -->|点击/滑动/输入| View[View<br/>Activity / Compose]
+    View -->|"发射 Intent<br/>(sealed class)"| VM[ViewModel]
+    VM -->|"处理逻辑<br/>调用 Repository"| Data[(Data Layer<br/>Repository)]
+    Data -->|返回数据| VM
+    VM -->|"更新 State<br/>(StateFlow)"| View
+    VM -.->|"一次性 Effect<br/>(Channel)"| View
+
+    style View fill:#B3D9FF,stroke:#0066CC,stroke-width:2px
+    style VM fill:#E0B3FF,stroke:#6600CC,stroke-width:2px
+    style Data fill:#B3FFB3,stroke:#006600,stroke-width:2px
+    style User fill:#FFE0B3,stroke:#CC6600,stroke-width:2px

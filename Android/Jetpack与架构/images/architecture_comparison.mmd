@@ -1,0 +1,36 @@
+graph LR
+    subgraph MVC
+        direction TB
+        M1[Model] -->|通知| V1[View<br/>Activity/Fragment]
+        V1 -->|用户事件| C1[Controller<br/>也是Activity]
+        C1 -->|更新| M1
+        style V1 fill:#FFB3B3,stroke:#CC0000
+        style C1 fill:#FFB3B3,stroke:#CC0000
+    end
+
+    subgraph MVP
+        direction TB
+        V2[View<br/>Activity 实现接口] <-->|接口回调| P2[Presenter<br/>持有View引用]
+        P2 <-->|调用| M2[Model]
+        style V2 fill:#B3D9FF,stroke:#0066CC
+        style P2 fill:#B3FFB3,stroke:#006600
+    end
+
+    subgraph MVVM
+        direction TB
+        V3[View<br/>Activity/Fragment] -.->|observe| VM3[ViewModel<br/>不持有View引用]
+        V3 -->|调用方法| VM3
+        VM3 <-->|调用| M3[Model]
+        style V3 fill:#B3D9FF,stroke:#0066CC
+        style VM3 fill:#FFE0B3,stroke:#CC6600
+    end
+
+    subgraph MVI
+        direction TB
+        V4[View] -->|Intent| VM4[ViewModel]
+        VM4 -->|State| V4
+        VM4 <-->|调用| M4[Model]
+        VM4 -.->|Effect| V4
+        style V4 fill:#B3D9FF,stroke:#0066CC
+        style VM4 fill:#E0B3FF,stroke:#6600CC
+    end

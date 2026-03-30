@@ -1,0 +1,51 @@
+graph TD
+    Source["源码<br/>.kt / .java / .xml / .png"] --> AAPT2
+    Source --> Annotation
+    Source --> Compile
+
+    subgraph Resources["资源处理"]
+        AAPT2["AAPT2 compile<br/>单个资源 → .flat"] --> AAPT2Link["AAPT2 link<br/>合并 → R.java + resources.arsc"]
+    end
+
+    subgraph AnnotationProc["注解处理"]
+        Annotation["KSP / kapt"] --> GenCode["生成辅助源码<br/>Room DAO / Hilt Component"]
+    end
+
+    AAPT2Link --> Compile
+    GenCode --> Compile
+
+    subgraph Compilation["编译"]
+        Compile["kotlinc / javac<br/>.kt/.java → .class"]
+    end
+
+    Compile --> BytecodeTransform
+
+    subgraph Transform["字节码转换"]
+        BytecodeTransform["AsmClassVisitorFactory<br/>字节码插桩"]
+    end
+
+    BytecodeTransform --> DexChoice
+
+    subgraph Dex["DEX 转换"]
+        DexChoice{"Debug or Release?"}
+        DexChoice -->|Debug| D8["D8<br/>.class → .dex<br/>+ 脱糖"]
+        DexChoice -->|Release| R8["R8<br/>.class → .dex<br/>+ 脱糖 + 压缩 + 混淆 + 优化"]
+    end
+
+    D8 --> Package
+    R8 --> Package
+
+    subgraph Packaging["打包与签名"]
+        Package["打包<br/>dex + resources + assets + .so → APK"]
+        Package --> Sign["apksigner<br/>v1/v2/v3/v4 签名"]
+        Sign --> Align["zipalign<br/>4 字节对齐"]
+    end
+
+    Align --> APK(["最终 APK / AAB"])
+
+    style Resources fill:#E8F5E9,stroke:#4CAF50
+    style AnnotationProc fill:#F3E5F5,stroke:#9C27B0
+    style Compilation fill:#E3F2FD,stroke:#2196F3
+    style Transform fill:#FFF3E0,stroke:#FF9800
+    style Dex fill:#FCE4EC,stroke:#E91E63
+    style Packaging fill:#F1F8E9,stroke:#8BC34A

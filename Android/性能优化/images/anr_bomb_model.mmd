@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant App as 应用主线程
+    participant AMS as AMS / ActiveServices
+    participant Handler as AMS Handler
+    participant AnrHelper as AnrHelper
+
+    Note over AMS: === 埋弹阶段 ===
+    AMS->>App: scheduleCreateService() / scheduleReceiver()
+    AMS->>Handler: sendMessageDelayed(TIMEOUT_MSG, 超时阈值)
+    Note over Handler: 定时炸弹已设置
+
+    alt 正常完成（拆弹）
+        App->>AMS: serviceDoneExecuting() / finishReceiver()
+        AMS->>Handler: removeMessages(TIMEOUT_MSG)
+        Note over Handler: 定时炸弹已拆除
+    else 超时（爆炸）
+        Handler->>Handler: handleMessage(TIMEOUT_MSG)
+        Handler->>AnrHelper: appNotResponding()
+        Note over AnrHelper: === ANR 处理阶段 ===
+        AnrHelper->>AnrHelper: 收集 CPU 信息
+        AnrHelper->>App: 发送 SIGQUIT 信号
+        App->>App: ART dump 所有线程堆栈
+        App-->>AnrHelper: traces.txt 写入完成
+        AnrHelper->>AnrHelper: 写入 EventLog / DropBox
+        alt 前台进程
+            AnrHelper->>App: 弹出 ANR 对话框
+        else 后台进程
+            AnrHelper->>App: 静默 kill 进程
+        end
+    end

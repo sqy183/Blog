@@ -33,6 +33,9 @@
 | Service 深度解析 | `Android/Framework/Service深度解析.md` | startService/bindService 生命周期差异及源码调用链、onStartCommand 返回值策略、Bound Service 三种实现（Binder/Messenger/AIDL）、前台服务类型（Android 14+）、后台限制演进时间线（Android 6~15）、IntentService 废弃与替代方案对比、进程优先级与保活争议、WorkManager 对比、7 道面试题 | 高 |
 | BroadcastReceiver 深度解析 | `Android/Framework/BroadcastReceiver深度解析.md` | 静态/动态注册源码调用链、广播分发流程（AMS broadcastIntentLocked）、有序广播拦截机制、goAsync() 原理、Android 8.0+ 隐式广播限制及应对、各版本限制汇总、LocalBroadcastManager 废弃与 SharedFlow 替代、Android 13+ exported 标志、6 道面试题 | 高 |
 | ContentProvider 深度解析 | `Android/Framework/ContentProvider深度解析.md` | 极早的初始化时机（早于 Application.onCreate）、跨进程通信全流程（ContentResolver→AMS→Provider）、CursorWindow 共享内存传递、unstable/stable Provider、URI 路由与 UriMatcher、权限模型与临时 URI 授权、FileProvider、App Startup 合并初始化原理、ContentObserver 变更通知、6 道面试题 | 高 |
+| ANR 原理与分析 | `Android/性能优化/ANR原理与分析.md` | 四大 ANR 类型与超时阈值、Input ANR（InputDispatcher Native 层）/Broadcast/Service/ContentProvider 触发机制源码分析、埋弹-拆弹模型、ANR 处理流程（SIGQUIT/traces.txt/DropBox）、traces.txt 结构解析与堆栈模式、三步定位法（CPU→堆栈→上下文）、线上监控方案对比（Looper Printer/ANR-WatchDog/SIGQUIT 监听）、预防最佳实践、10 道面试题 | 高 |
+| 架构演进 MVC-MVP-MVVM-MVI | `Android/Jetpack与架构/架构演进MVC-MVP-MVVM-MVI.md` | MVC 在 Android 中的退化（V+C 二合一）、MVP 接口解耦与痛点（接口爆炸/生命周期/内存泄漏）、MVVM 观察者模式与生命周期感知、MVVM 状态分散问题、MVI 单向数据流与不可变状态（State/Intent/Effect）、State vs Effect 划分原则、Reducer 模式、State 膨胀应对策略、四代架构横向对比表、Google UDF 架构指南、渐进式迁移策略、实战选型建议、10 道面试题 | 高 |
+| Gradle 构建流程与 APK 编译 | `Android/工程化与DevOps/Gradle构建流程与APK编译.md` | 三阶段生命周期（初始化/配置/执行）、Task DAG 调度模型、APK 编译管线全流程（AAPT2→kotlinc/javac→D8/R8→打包→签名）、AAPT2 增量编译、D8 vs R8 对比、脱糖原理、Build Variant、Groovy vs Kotlin DSL、Version Catalog、Convention Plugin vs buildSrc 选型、自定义 Plugin/Task 与增量构建、AsmClassVisitorFactory 字节码插桩、KSP vs kapt、构建加速全景（Configuration Cache/Build Cache/并行构建）、依赖管理（implementation vs api）、10 道面试题 | 高 |
 
 
 ## 历史遗留文档（已迁移为 Markdown）
@@ -67,9 +70,9 @@
 - [x] LiveData / Flow 对比
 - [x] OkHttp 拦截器链原理
 - [x] Glide 缓存机制
-- [ ] MVC → MVP → MVVM → MVI 架构演进
-- [ ] Gradle 构建流程
-- [ ] ANR 原理与分析
+- [x] MVC → MVP → MVVM → MVI 架构演进
+- [x] Gradle 构建流程
+- [x] ANR 原理与分析
 - [ ] 动态化 UI：Server-Driven UI 服务端下发机制与原生架构
 - [ ] 研发规范：基于 AST 的自定义质量防线与 Lint 检查
 

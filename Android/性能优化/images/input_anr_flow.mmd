@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant HW as 输入设备(触屏/按键)
+    participant IMS as InputManagerService
+    participant ID as InputDispatcher(Native)
+    participant WS as 目标窗口(App)
+    participant AMS as AMS
+
+    HW->>IMS: 硬件中断 → 输入事件
+    IMS->>ID: notifyMotion() / notifyKey()
+    ID->>ID: dispatchOnce()
+    ID->>ID: findFocusedWindowTargetLocked()
+
+    alt 窗口就绪
+        ID->>WS: 通过 InputChannel 派发事件
+        WS->>WS: dispatchTouchEvent() 处理
+        WS->>ID: finishInputEvent() 反馈已消费
+        Note over ID: 重置等待计时
+    else 窗口忙(上一事件未处理完)
+        ID->>ID: 记录 waitStartTime
+        loop 每次 dispatchOnce 循环检查
+            ID->>ID: currentTime - waitStartTime > 5s ?
+        end
+        ID->>ID: onAnrLocked() 超时!
+        ID->>AMS: InputManagerService 回调
+        AMS->>AMS: inputDispatchingTimedOut()
+        AMS->>AMS: AnrHelper.appNotResponding()
+    end
