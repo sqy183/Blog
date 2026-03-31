@@ -35,7 +35,8 @@
 | ContentProvider 深度解析 | `Android/Framework/ContentProvider深度解析.md` | 极早的初始化时机（早于 Application.onCreate）、跨进程通信全流程（ContentResolver→AMS→Provider）、CursorWindow 共享内存传递、unstable/stable Provider、URI 路由与 UriMatcher、权限模型与临时 URI 授权、FileProvider、App Startup 合并初始化原理、ContentObserver 变更通知、6 道面试题 | 高 |
 | ANR 原理与分析 | `Android/性能优化/ANR原理与分析.md` | 四大 ANR 类型与超时阈值、Input ANR（InputDispatcher Native 层）/Broadcast/Service/ContentProvider 触发机制源码分析、埋弹-拆弹模型、ANR 处理流程（SIGQUIT/traces.txt/DropBox）、traces.txt 结构解析与堆栈模式、三步定位法（CPU→堆栈→上下文）、线上监控方案对比（Looper Printer/ANR-WatchDog/SIGQUIT 监听）、预防最佳实践、10 道面试题 | 高 |
 | 架构演进 MVC-MVP-MVVM-MVI | `Android/Jetpack与架构/架构演进MVC-MVP-MVVM-MVI.md` | MVC 在 Android 中的退化（V+C 二合一）、MVP 接口解耦与痛点（接口爆炸/生命周期/内存泄漏）、MVVM 观察者模式与生命周期感知、MVVM 状态分散问题、MVI 单向数据流与不可变状态（State/Intent/Effect）、State vs Effect 划分原则、Reducer 模式、State 膨胀应对策略、四代架构横向对比表、Google UDF 架构指南、渐进式迁移策略、实战选型建议、10 道面试题 | 高 |
-| Gradle 构建流程与 APK 编译 | `Android/工程化与DevOps/Gradle构建流程与APK编译.md` | 三阶段生命周期（初始化/配置/执行）、Task DAG 调度模型、APK 编译管线全流程（AAPT2→kotlinc/javac→D8/R8→打包→签名）、AAPT2 增量编译、D8 vs R8 对比、脱糖原理、Build Variant、Groovy vs Kotlin DSL、Version Catalog、Convention Plugin vs buildSrc 选型、自定义 Plugin/Task 与增量构建、AsmClassVisitorFactory 字节码插桩、KSP vs kapt、构建加速全景（Configuration Cache/Build Cache/并行构建）、依赖管理（implementation vs api）、10 道面试题 | 高 |
+| Gradle 构建流程与 APK 编译 | `Android/工程化与DevOps/Gradle构建流程与APK编译.md` | 三阶段生命周期（初始化/配置/执行）、Task DAG 调度模型、APK 编译管线全流程（AAPT2→kotlinc/javac→D8/R8→打包→签名）、AAPT2 增量编译、D8 vs R8 对比、脱糖原理、Build Variant、Groovy vs Kotlin DSL、Version Catalog、Convention Plugin vs buildSrc 选型、自定义 Plugin/Task 与增量构建、AsmClassVisitorFactory 字节码插桩、KSP vs kapt、构建加速全景（Configuration Cache/Build Cache/并行构建）、依赖管理（implementation vs api）、**依赖冲突解决机制（Highest Version Wins/force/exclude/substitution）、SDK 依赖管理策略（compileOnly/BOM/Shadow Relocate 字节码重写原理）、Jetifier 原理与迁移、依赖排查命令**、11 道面试题 | 高 |
+| ART 虚拟机原理 | `Android/底层原理与系统源码/ART虚拟机原理.md` | 为什么不用标准JVM、Zygote fork 共享模型、Dex vs Java 字节码（栈vs寄存器架构/文件格式/指令对比）、编译策略三代演进（Dalvik JIT→ART全量AOT→混合编译PGO）、Cloud Profile/Baseline Profile、dex2oat编译管线与过滤器、ART GC演进（Mark-Sweep→CMS→Concurrent Copying/Read Barrier）、堆空间布局（Image/Zygote/Allocation/LargeObject）、运行时文件体系（vdex/odex/art/prof/dm）、运行时优化（内联缓存/方法内联/NullCheck消除）、7 道面试题 | 高 |
 
 
 ## 历史遗留文档（已迁移为 Markdown）
@@ -81,7 +82,7 @@
 - [ ] Jetpack Compose 原理
 - [ ] 跨平台技术与多端融合实践（KMP / Flutter / HarmonyOS NEXT）
 - [ ] 签名机制
-- [ ] ART 虚拟机原理
+- [x] ART 虚拟机原理
 - [ ] JNI/NDK 基础
 - [ ] 端侧 AI 推理框架与大模型实践（TFLite / Gemini Nano 等）
 - [ ] 逆向与防御：脱壳加壳机制及 Hook 技术探讨

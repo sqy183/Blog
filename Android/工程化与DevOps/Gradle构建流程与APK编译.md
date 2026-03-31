@@ -673,28 +673,217 @@ dependencies {
 
 > 经验法则：**默认用 `implementation`，只在确实需要暴露给依赖方时才用 `api`**。`implementation` 不传递依赖意味着修改该依赖不会触发下游模块重新编译，显著加速增量构建。
 
-### 8.2 依赖冲突解决
+### 8.2 依赖冲突解决机制
+
+**Gradle 的默认策略：Highest Version Wins（最高版本胜出）**
+
+当依赖图中同一个库出现多个版本时，Gradle 默认选择最高版本：
+
+```
+宿主 app:  implementation("com.squareup.okhttp3:okhttp:4.9.3")
+SDK 传递:  okhttp:4.12.0（通过 sdk-core 的传递依赖引入）
+解析结果:   okhttp:4.12.0（取最高版本）
+```
+
+多数情况下这没问题（同一大版本内向后兼容），但以下场景会出问题：
+
+- **大版本不兼容**：SDK 依赖 OkHttp 5.x，宿主用 4.x，API 存在删改
+- **隐式降级破坏**：选了高版本后，项目中其他模块用到了低版本独有的已移除 API
+- **坐标变更**：同一功能换了 group/artifact（如 `support-v4` vs `androidx.core`），Gradle 视为不同库，不会自动仲裁，最终打入两份实现
+
+**宿主侧的应急处理手段：**
 
 ```kotlin
-// 强制指定版本
+// 方式1：强制指定版本
 configurations.all {
     resolutionStrategy {
-        force("com.google.guava:guava:32.1.3-android")  // 强制版本
-        failOnVersionConflict()  // 有冲突直接失败（严格模式）
+        force("com.google.guava:guava:32.1.3-android")
+        // failOnVersionConflict()  // 严格模式：有冲突直接构建失败
     }
 }
 
-// 排除传递依赖
+// 方式2：排除特定传递依赖
 dependencies {
-    implementation("com.example:library:1.0") {
-        exclude(group = "com.google.guava", module = "guava")
+    implementation("com.example:sdk-core:1.0.0") {
+        exclude(group = "com.squareup.okhttp3", module = "okhttp")
+    }
+}
+
+// 方式3：全局排除某个库（慎用）
+configurations.all {
+    exclude(group = "com.android.support", module = "support-annotations")
+}
+```
+
+**依赖替换规则（Dependency Substitution）：**
+
+工作在 Gradle **依赖解析阶段**——在下载 artifact 之前，将匹配的坐标改写为目标坐标：
+
+```kotlin
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        // 场景：旧库迁移到新坐标
+        substitute(module("com.android.support:support-v4"))
+            .using(module("androidx.legacy:legacy-support-v4:1.0.0"))
+
+        // 场景：将远程依赖替换为本地模块（开发调试）
+        substitute(module("com.example:sdk-core"))
+            .using(project(":sdk-core"))
     }
 }
 ```
 
+> **注意**：依赖替换只改坐标，不改字节码。如果新旧库的包名、类名不同（如 `android.support.v4.app.Fragment` vs `androidx.fragment.app.Fragment`），替换后编译仍会报错。这种情况需要 Jetifier（见 8.4 节）。
+
+### 8.3 SDK 开发的依赖管理策略
+
+SDK 开发与应用开发的核心区别：SDK 的依赖会传递给宿主，必须最小化对宿主的"侵入性"。
+
+**策略一：compileOnly — 公共库不打包，由宿主提供（首选方案）**
+
+```kotlin
+// SDK 的 build.gradle.kts
+dependencies {
+    // 编译时可见，但不写入 POM / 不传递给宿主
+    compileOnly("com.squareup.okhttp3:okhttp:4.12.0")
+    compileOnly("io.coil-kt:coil:2.5.0")
+
+    // 只有 SDK 内部独有的、宿主不可能自带的库，才用 implementation
+    implementation("com.sdk.internal:protocol:1.0.0")
+}
+```
+
+原理：`compileOnly` 依赖不会写入发布的 POM/module 元数据文件，宿主的 Gradle 在解析依赖图时完全不知道 SDK 用了 OkHttp，自然不存在版本冲突。
+
+代价：SDK 接入文档必须声明 "Required Dependencies"（最低版本要求），否则宿主运行时 `ClassNotFoundException`。
+
+**策略二：BOM（Bill of Materials）— 统一版本建议**
+
+当 SDK 是多库矩阵时，发布一个 BOM 供宿主统一管理版本：
+
+```kotlin
+// sdk-bom/build.gradle.kts
+plugins {
+    `java-platform`
+}
+
+dependencies {
+    constraints {
+        // 这里用 api 而非 implementation：
+        // BOM 的存在目的就是让版本约束"传递"给所有消费者
+        // 用 implementation 则约束不传递，间接依赖方拿不到版本建议
+        api("com.your.sdk:sdk-core:1.2.0")
+        api("com.your.sdk:sdk-network:1.2.0")
+        api("com.squareup.okhttp3:okhttp:4.12.0")
+    }
+}
+```
+
+宿主使用：
+
+```kotlin
+dependencies {
+    implementation(platform("com.your.sdk:sdk-bom:1.2.0"))
+    implementation("com.your.sdk:sdk-core")  // 不写版本号，由 BOM 决定
+}
+```
+
+> BOM 只是"版本建议"，如果宿主显式指定了更高版本，Gradle 仍会用宿主的版本（Highest Wins 优先于 BOM 约束）。
+
+**策略三：Shadow / Relocate — 字节码级版本隔离（极端方案）**
+
+当 SDK 必须绑定特定版本、且绝对不能被宿主覆盖时，用 Shadow 插件将依赖的包名重写后内嵌：
+
+```kotlin
+plugins {
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+}
+
+shadowJar {
+    relocate("com.google.gson", "com.your.sdk.internal.gson")
+}
+```
+
+**实现原理**（基于 ASM 字节码重写）：
+
+```
+Shadow relocate 处理流程:
+  ① 读取 SDK 所有 .class 文件 + 被 relocate 的依赖 .class 文件
+  ② 使用 ASM 遍历字节码，将所有对 com.google.gson.* 的引用
+     （类引用、方法描述符、注解值、反射字符串常量等）
+     重写为 com.your.sdk.internal.gson.*
+  ③ 将 .class 文件移动到新的包目录结构下
+  ④ 将重写后的类打包进 SDK 输出产物（JAR/AAR）
+```
+
+重写后，运行时 ClassLoader 中存在两个完全独立的类：
+
+```
+com.google.gson.Gson          ← 宿主自己引入的 (v2.8.9)
+com.your.sdk.internal.gson.Gson ← SDK 内嵌的 (v2.10.1)
+```
+
+对 JVM/ART 而言，全限定名不同就是不同的类，各自独立加载、互不干扰。SDK 内部代码在编译时已被改写为引用 `com.your.sdk.internal.gson.Gson`，不存在"该用哪个"的问题。
+
+代价：APK 中该库的字节码存在两份，包体积增大。且 Android 场景下资源合并（R 文件、Manifest）、ProGuard 规则等需要额外处理，工程复杂度高。
+
+**策略对比：**
+
+| 策略 | 适用场景 | 推荐度 |
+|------|---------|--------|
+| `compileOnly` + 文档声明最低版本 | 通用公共库（OkHttp/Gson/Glide 等） | 首选 |
+| BOM 统一版本管理 | SDK 自身是多库矩阵 | 推荐 |
+| 最小化传递依赖（`implementation` 代替 `api`） | 所有场景 | 必须做 |
+| 宿主 `force` / `exclude` | 宿主侧应急处理 | 常用 |
+| Shadow / Relocate | 必须绑定特定版本的极端场景 | 谨慎使用 |
+
+### 8.4 Jetifier 与依赖迁移
+
+当遇到**包名级别的不兼容**（如 `android.support.*` → `androidx.*`），坐标替换无法解决问题，因为字节码中的类引用仍然指向旧包名。Google 提供的解决方案是 **Jetifier**：
+
+```properties
+# gradle.properties
+android.useAndroidX=true       # 项目自身使用 AndroidX
+android.enableJetifier=true    # 自动转换第三方库中的 support 引用
+```
+
+**Jetifier 的工作原理**（字节码层面重写，区别于依赖替换的坐标层面改写）：
+
+```
+构建时处理流程:
+  ① 下载第三方 AAR/JAR（内部 import 的是 android.support.v4.xxx）
+  ② 解压产物
+  ③ 使用 ASM 遍历所有 .class 文件，根据内置映射表
+     将 android.support.* 包引用重写为对应的 androidx.* 包名
+  ④ 同时处理 XML 资源中的 support 库引用
+  ⑤ 重新打包为修改后的 AAR/JAR
+  ⑥ Gradle 使用修改后的产物参与编译和打包
+```
+
+> 现在绝大多数库已原生支持 AndroidX，Jetifier 在新项目中建议**关闭**（`android.enableJetifier=false`），可以加速构建——Jetifier 对每个依赖都要做一次解压-扫描-重打包，开销不小。可用 `./gradlew checkJetifier` 或 [jetifier-standalone](https://developer.android.com/studio/command-line/jetifier) 工具检查是否还有依赖需要 Jetifier。
+
+### 8.5 依赖排查实用命令
+
 ```bash
-# 查看依赖树，定位冲突
+# 查看完整依赖树
 ./gradlew app:dependencies --configuration debugRuntimeClasspath
+
+# 查看某个库为什么是这个版本（谁引入的、版本仲裁过程）
+./gradlew app:dependencyInsight --dependency okhttp \
+    --configuration debugRuntimeClasspath
+
+# 输出示例：
+# com.squareup.okhttp3:okhttp:4.12.0
+#    variant "jvm-api" [...]
+#    Selection reasons:
+#      - By conflict resolution: between versions 4.12.0 and 4.9.3
+#    com.squareup.okhttp3:okhttp:4.12.0
+#       \--- com.your.sdk:sdk-network:1.0.0
+#    com.squareup.okhttp3:okhttp:4.9.3 -> 4.12.0
+#       \--- project :app
+
+# 生成依赖关系的 HTML 报告
+./gradlew app:htmlDependencyReport
 ```
 
 ## 九、常见面试题与解答
@@ -738,3 +927,7 @@ dependencies {
 ### Q10：Android 项目如何做模块化？模块化对构建速度有什么影响？
 
 **A：** 模块化的常见结构：app 壳模块 → feature 业务模块 → library 基础模块（网络、存储、工具等）。模块间通过接口（api 模块暴露接口，impl 模块提供实现）+ 依赖注入（Hilt）解耦。对构建速度的影响有正有负：正面——独立模块可以并行编译，`implementation` 依赖减少级联重编译，Build Cache 可以按模块粒度缓存；负面——模块数过多增加配置阶段耗时（每个模块都需执行 build.gradle），AAPT2 的资源合并变复杂。经验上，中等模块粒度（15-30 个模块）在并行构建收益和配置开销之间取得最佳平衡。
+
+### Q11：开发 SDK 时，如何避免与宿主的依赖版本冲突？Shadow Relocate 的原理是什么？
+
+**A：** SDK 依赖管理的核心原则是最小化对宿主的侵入。首选方案是对公共库（OkHttp、Gson 等）使用 `compileOnly`——编译时 SDK 能引用这些类，但不写入 POM 元数据，宿主解析依赖图时看不到 SDK 用了这些库，自然不冲突；代价是 SDK 文档必须声明最低依赖要求。如果 SDK 是多库矩阵，可以发布 BOM（`java-platform`），其中 `constraints` 用 `api` 而非 `implementation`，因为 BOM 的目的就是让版本约束传递给所有消费者。极端情况下（必须绑定特定版本），可用 Shadow 插件的 relocate 功能：它基于 ASM 字节码重写，将依赖的所有类引用（包名、方法描述符、注解值）改写为新的包路径（如 `com.google.gson` → `com.sdk.internal.gson`），并将重写后的类打入 SDK 产物。运行时 ClassLoader 中存在两个全限定名不同的独立类，互不干扰。代价是包体积增大（该库代码存在两份）。
