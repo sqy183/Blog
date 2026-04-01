@@ -1,0 +1,24 @@
+flowchart TD
+    subgraph 编译阶段
+        SRC_KT[".kt 源码"] -->|kotlinc| CLS1[".class 文件"]
+        SRC_JAVA[".java 源码"] -->|javac| CLS2[".class 文件"]
+    end
+
+    CLS1 --> ASM
+    CLS2 --> ASM
+
+    subgraph ASM 插桩阶段
+        ASM["AsmClassVisitorFactory\n读取 .class → 修改 → 写回 .class"]
+    end
+
+    ASM --> CLS_MOD[".class（插桩后）"]
+
+    subgraph DEX 转换阶段
+        CLS_MOD -->|D8 / R8| DEX[".dex 文件"]
+    end
+
+    DEX --> APK["APK 打包 & 签名"]
+
+    style ASM fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style CLS_MOD fill:#fff9c4,stroke:#f9a825
+    style APK fill:#c8e6c9,stroke:#388e3c

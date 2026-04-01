@@ -457,6 +457,8 @@ class BuildTimerPlugin : Plugin<Project> {
 
 ## 六、AGP Transform 与字节码插桩
 
+> 深入阅读：[ASM 字节码插桩](ASM字节码插桩.md) — JVM 字节码基础、ASM Core API 原理、AdviceAdapter 实操、完整插件工程搭建、常见插桩场景
+
 ### 6.1 Transform API 的演进
 
 | AGP 版本 | 方案 | 状态 |

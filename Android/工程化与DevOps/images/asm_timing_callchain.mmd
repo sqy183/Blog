@@ -1,0 +1,29 @@
+flowchart TD
+    A["kotlinc/javac 编译\n生成 .class（含 @LogTime 注解）"] --> B
+
+    subgraph AGP["AGP 字节码处理流水线"]
+        B["遍历所有 .class 文件"] --> C{"isInstrumentable()"}
+        C -->|"不匹配（三方库等）"| SKIP["跳过，不处理"]
+        C -->|"匹配 com.example.*"| D["createClassVisitor()\n创建 TimingClassVisitor"]
+
+        D --> E["visitMethod()\n为每个方法创建\nAnnotationCheckMethodVisitor"]
+
+        E --> F{"visitAnnotation()\n检测 @LogTime"}
+        F -->|"无注解"| PASS["透传，不修改"]
+        F -->|"有注解"| G["委托给 TimingMethodVisitor"]
+
+        G --> H["onMethodEnter()\n注入: startTime = System.currentTimeMillis()"]
+        G --> I["onMethodExit()\n注入: cost = currentTimeMillis() - startTime\nLog.d(tag, message)"]
+    end
+
+    H --> J[".class（插桩后）"]
+    I --> J
+    PASS --> J
+    SKIP --> J
+    J --> K["D8/R8 → .dex → APK"]
+
+    style AGP fill:#fafafa,stroke:#9e9e9e
+    style G fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    style H fill:#e8f5e9,stroke:#388e3c
+    style I fill:#e8f5e9,stroke:#388e3c
+    style K fill:#c8e6c9,stroke:#388e3c

@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant CR as ClassReader<br/>（字节码解析器）
+    participant CV as ClassVisitor<br/>（你的插桩逻辑）
+    participant CW as ClassWriter<br/>（字节码生成器）
+
+    Note over CR: 读取原始 .class
+    CR->>CV: visit(version, access, name, superName, ...)
+    CV->>CW: visit(...)
+
+    CR->>CV: visitAnnotation(desc, visible)
+    CV->>CW: visitAnnotation(...)
+
+    CR->>CV: visitField(access, name, desc, ...)
+    CV->>CW: visitField(...)
+
+    rect rgb(232, 245, 253)
+        Note over CR,CW: 方法级处理（核心插桩区域）
+        CR->>CV: visitMethod(access, name, desc, ...)
+        CV->>CW: visitMethod(...) → 返回 MethodVisitor
+
+        Note over CV: 通过自定义 MethodVisitor<br/>拦截和修改方法体
+
+        CR->>CV: visitCode()
+        CV-->>CV: onMethodEnter() — 注入入口代码
+        CV->>CW: visitCode()
+
+        CR->>CV: visitInsn(opcode) × N
+        CV->>CW: visitInsn(opcode)
+
+        CV-->>CV: onMethodExit() — 注入出口代码
+        CR->>CV: visitMaxs(stack, locals)
+        CV->>CW: visitMaxs(...)
+    end
+
+    CR->>CV: visitEnd()
+    CV->>CW: visitEnd()
+
+    Note over CW: 输出修改后的 .class
