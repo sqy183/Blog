@@ -300,8 +300,6 @@ override fun onConfigurationChanged(newConfig: Configuration) {
 | ViewModel 层 | `SavedStateHandle` | 需要跨进程死亡保存的关键数据（如列表的筛选条件） | 序列化到 Bundle |
 | 持久化层 | Room / DataStore / 文件 | 业务数据 | 永久保存 |
 
-```
-
 ---
 
 ## 四、启动模式（Launch Mode）
@@ -654,7 +652,46 @@ singleTask 或 CLEAR_TOP + SINGLE_TOP:
 
 ---
 
-### Q7：什么场景下 Activity 的 onDestroy 不会被调用？
+### Q7：onCreate 的 setContentView 和 onResume 后的 addView 是什么关系？
+
+**答**：
+
+两者职责完全不同，分别负责"构建"和"显示"：
+
+**`setContentView()` — 内存中组装 View 树（onCreate 阶段）**
+
+```
+Activity.setContentView(R.layout.xxx)
+  -> PhoneWindow.setContentView()
+      -> 1. 创建 DecorView（如果还没有）
+      -> 2. LayoutInflater.inflate() 解析 XML -> 生成 View 对象树
+      -> 3. 将 View 树 add 到 DecorView 内部的 content 区域（id/content FrameLayout）
+```
+
+此时只是在内存中创建了 Java 对象并建立了父子关系，没有 ViewRootImpl、没有注册到 WMS、没有触发 measure/layout/draw，屏幕上什么都看不到。
+
+**`WindowManager.addView()` — 真正显示到屏幕（onResume 之后）**
+
+```
+ActivityThread.handleResumeActivity()
+  -> WindowManager.addView(decorView)
+      -> 创建 ViewRootImpl
+          -> ViewRootImpl.setView()
+              -> Session.addToDisplayAsUser() -> 注册到 WMS，分配 Surface
+              -> requestLayout() -> 等 Vsync -> measure/layout/draw -> 上屏
+```
+
+**为什么 setContentView 要放在 onCreate 而不是 onResume：**
+
+1. **保证后续生命周期能操作 View**：`setContentView` 之后才能 `findViewById`，如果延后到 `onResume`，`onCreate`/`onStart` 中所有 View 操作都会空指针
+2. **只需执行一次**：`onCreate` 只调用一次，而 `onResume` 会多次调用（从后台回来、对话框关闭等），View 树只需构建一次
+3. **职责分离**：`onCreate` 负责"准备什么要显示"，系统在 `onResume` 后负责"执行显示"
+
+> 一句话：`setContentView()` 是在内存中"组装零件"，`addView` 才是"通电开机"。
+
+---
+
+### Q8：什么场景下 Activity 的 onDestroy 不会被调用？
 
 **答**：
 
@@ -667,7 +704,7 @@ singleTask 或 CLEAR_TOP + SINGLE_TOP:
 
 ---
 
-### Q8：Activity 重建时，如何保证 ViewModel 中的数据不丢失？
+### Q9：Activity 重建时，如何保证 ViewModel 中的数据不丢失？
 
 **答**：
 
@@ -689,7 +726,7 @@ class MyViewModel(private val savedState: SavedStateHandle) : ViewModel() {
 
 ---
 
-### Q9：taskAffinity 设置后什么时候生效？
+### Q10：taskAffinity 设置后什么时候生效？
 
 **答**：
 
@@ -703,7 +740,7 @@ taskAffinity 单独设置**不会产生任何效果**。它必须配合以下条
 
 ---
 
-### Q10：Android 12 对启动模式有什么变化？为什么引入 singleInstancePerTask？
+### Q11：Android 12 对启动模式有什么变化？为什么引入 singleInstancePerTask？
 
 **答**：
 

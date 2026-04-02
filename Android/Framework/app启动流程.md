@@ -20,65 +20,7 @@
 
 ## 二、冷启动全景时序图
 
-```
-用户点击图标
-    │
-    ▼
-┌──────────┐   Binder IPC    ┌────────────────┐
-│ Launcher │ ──────────────► │     ATMS       │
-│ (App进程) │                 │  (SystemServer) │
-└──────────┘                 └───────┬────────┘
-                                     │ 解析Intent / 权限校验
-                                     │ 创建TaskRecord & ActivityRecord
-                                     ▼
-                             ┌────────────────┐
-                             │      AMS       │
-                             │  (SystemServer) │
-                             └───────┬────────┘
-                                     │ Socket通信
-                                     ▼
-                             ┌────────────────┐
-                             │    Zygote      │
-                             │  (独立进程)     │
-                             └───────┬────────┘
-                                     │ fork()
-                                     ▼
-                             ┌────────────────┐
-                             │   App 进程     │
-                             │ ActivityThread  │
-                             │   .main()      │
-                             └───────┬────────┘
-                                     │ Binder: attachApplication
-                                     ▼
-                             ┌────────────────┐
-                             │   AMS / ATMS   │
-                             └───────┬────────┘
-                                     │ Binder: bindApplication
-                                     │ Binder: scheduleTransaction (LaunchActivityItem)
-                                     ▼
-                             ┌────────────────┐
-                             │   App 进程     │
-                             │ Application    │
-                             │   .onCreate()  │
-                             │ Activity       │
-                             │   .onCreate()  │
-                             └───────┬────────┘
-                                     │ onResume → addView → ViewRootImpl
-                                     ▼
-                             ┌────────────────┐
-                             │    WMS         │
-                             │  (SystemServer) │
-                             └───────┬────────┘
-                                     │ Surface分配 → Vsync → 测绘
-                                     ▼
-                             ┌────────────────┐
-                             │ SurfaceFlinger │
-                             │  (Native进程)  │
-                             └────────────────┘
-                                     │
-                                     ▼
-                                首帧上屏，用户可见
-```
+![冷启动全景时序图](images/cold_start_sequence.svg)
 
 ---
 
