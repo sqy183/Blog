@@ -912,3 +912,78 @@ val globalHandler = CoroutineExceptionHandler { context, throwable ->
 }
 ```
 
+---
+
+### Q11：普通 Job 中，协程内 try-catch 能阻止异常传播给父协程吗？async + await 的 try-catch 应该怎么写？
+
+**答**：
+
+**1. 普通 Job 中，协程内 try-catch 能阻止异常传播给父协程吗？**
+
+**能。** 如果你在协程内部用 `try-catch` **成功捕获了异常**，异常就不会向上传播，因为对于父协程来说这个子协程是**正常完成**的：
+
+```kotlin
+val scope = CoroutineScope(Job()) // 普通 Job
+
+scope.launch {
+    try {
+        throw RuntimeException("boom")
+    } catch (e: RuntimeException) {
+        Log.e("TAG", "捕获了: ${e.message}")
+        // 异常被吞掉了，协程正常完成，父协程不受影响 ✅
+    }
+}
+```
+
+异常传播给父协程的前提是：**异常"逃逸"出了协程体**（即协程以异常状态完成）。`try-catch` 在协程内部把异常拦截住了，等于异常根本没有发生过。
+
+**2. `async` + `await` 的 try-catch 应该放在哪？**
+
+分两种情况：
+
+**情况一：父协程是普通 Job（最常见的坑）**
+
+在普通 Job 下，**在 `await()` 处 try-catch 无法阻止父协程被取消。** 因为异常在 `async` 协程完成的那一刻就已经向上传播给父协程了。
+
+正确做法是 **在 `async` 块内部 try-catch**：
+
+```kotlin
+coroutineScope { // 内部是普通 Job
+    val deferred = async {
+        try {
+            riskyOperation()
+        } catch (e: RuntimeException) {
+            null  // 返回兜底值，异常不会逃逸
+        }
+    }
+    
+    val result = deferred.await()  // 安全，拿到 null 或正常值
+}
+```
+
+**情况二：父协程是 SupervisorJob**
+
+在 `SupervisorJob` 下，异常不会自动传播给父协程，所以在 `await()` 处 try-catch 是有效的、被推荐的做法：
+
+```kotlin
+supervisorScope {  // SupervisorJob，子协程异常不传播给父
+    val deferred = async {
+        throw RuntimeException("boom") // 异常不会向上传播给父协程 ✅
+    }
+
+    try {
+        deferred.await()  // ✅ 这里 try-catch 完全有效
+    } catch (e: RuntimeException) {
+        Log.e("TAG", "处理异常: ${e.message}")
+    }
+}
+```
+
+**总结：**
+
+| 场景 | 推荐 try-catch 位置 | 原因 |
+|------|-------------------|------|
+| **普通 Job + launch** | `launch` 块内部 | 异常立即向上传播，必须在源头拦截 |
+| **普通 Job + async** | `async` 块内部 | 异常在 async 完成时就传播了，`await()` 处 catch 来不及 |
+| **SupervisorJob + async** | `await()` 调用处 | 异常不向上传播，await 时才抛出，catch 有效 |
+
