@@ -1,0 +1,42 @@
+flowchart TD
+    subgraph DEV["开发阶段"]
+        A[编写 SDK 代码] --> B[API 设计评审]
+        B --> C[编写 KDoc / Javadoc]
+        C --> D[编写 consumer-rules.pro]
+    end
+
+    subgraph BUILD["构建阶段"]
+        D --> E[./gradlew :sdk:assembleRelease]
+        E --> F[R8 混淆 + 资源缩减]
+        F --> G["生成 AAR\n(classes.jar + res + manifest\n+ proguard.txt + jni)"]
+    end
+
+    subgraph VERIFY["验证阶段"]
+        G --> H[二进制兼容性检查\nMetalava / japicmp]
+        H --> I[方法数 & 体积检查\ndexcount]
+        I --> J[Sample App 集成测试]
+    end
+
+    subgraph PUBLISH["发布阶段"]
+        J --> K{版本类型?}
+        K -->|开发中| L["发布 SNAPSHOT\n1.2.0-SNAPSHOT"]
+        K -->|正式版| M["发布 Release\n1.2.0"]
+        L --> N[SNAPSHOT 仓库]
+        M --> O[Release 仓库\n签名 + POM]
+        O --> P[更新 CHANGELOG]
+        P --> Q[Git Tag + Release Notes]
+    end
+
+    subgraph INTEGRATE["宿主集成"]
+        N --> R["宿主 build.gradle\nimplementation\n'com.example:sdk:1.2.0'"]
+        Q --> R
+        R --> S[Gradle 解析 POM\n拉取传递依赖]
+        S --> T[合并 Manifest + 资源\n应用 consumerProguardFiles]
+        T --> U[宿主 APK 构建完成]
+    end
+
+    style DEV fill:#E3F2FD,stroke:#1565C0
+    style BUILD fill:#FFF3E0,stroke:#E65100
+    style VERIFY fill:#F3E5F5,stroke:#6A1B9A
+    style PUBLISH fill:#E8F5E9,stroke:#2E7D32
+    style INTEGRATE fill:#FFF8E1,stroke:#F57F17

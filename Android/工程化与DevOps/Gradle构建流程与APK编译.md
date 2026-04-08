@@ -839,6 +839,8 @@ com.your.sdk.internal.gson.Gson ← SDK 内嵌的 (v2.10.1)
 | 宿主 `force` / `exclude` | 宿主侧应急处理 | 常用 |
 | Shadow / Relocate | 必须绑定特定版本的极端场景 | 谨慎使用 |
 
+> 深入阅读：[SDK 开发与发布](SDK开发与发布.md) — API 设计原则、初始化策略、AAR 打包与 Maven 发布、Crash 隔离、体积控制的完整指南
+
 ### 8.4 Jetifier 与依赖迁移
 
 当遇到**包名级别的不兼容**（如 `android.support.*` → `androidx.*`），坐标替换无法解决问题，因为字节码中的类引用仍然指向旧包名。Google 提供的解决方案是 **Jetifier**：

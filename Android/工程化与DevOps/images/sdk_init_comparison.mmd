@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant App as App 进程
+    participant CP as ContentProvider
+    participant AS as App Startup
+    participant SDK as SDK
+
+    rect rgb(240, 248, 255)
+        Note over App,SDK: 方式一：ContentProvider 自动初始化
+        App->>CP: 系统自动创建 ContentProvider
+        CP->>CP: onCreate()
+        CP->>SDK: SDK.init(context)
+        Note right of SDK: Application.onCreate() 之前
+        Note right of SDK: 每个 SDK 一个 Provider
+    end
+
+    rect rgb(245, 255, 245)
+        Note over App,SDK: 方式二：App Startup
+        App->>AS: 系统创建 InitializationProvider（唯一）
+        AS->>AS: 读取 meta-data + 拓扑排序
+        AS->>SDK: Initializer.create(context)
+        Note right of SDK: 合并为 1 个 Provider
+        Note right of SDK: 支持依赖关系声明
+    end
+
+    rect rgb(255, 245, 238)
+        Note over App,SDK: 方式三：手动 init()
+        App->>App: Application.onCreate()
+        App->>App: 显示隐私弹窗
+        App->>App: 用户点击同意
+        App->>SDK: SDK.init(context, config)
+        Note right of SDK: 时机完全可控
+        Note right of SDK: 适合隐私合规场景
+    end
