@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant JS as JS (H5 页面)
+    participant Bridge as JSBridge SDK
+    participant WV as WebView (Native)
+    participant Handler as BridgeHandler
+
+    Note over JS, Handler: 方式一：@JavascriptInterface
+    JS->>Bridge: JSBridge.call("user", "getInfo", params, callback)
+    Bridge->>Bridge: 生成 callbackId, 存入 callbacks Map
+    Bridge->>WV: window.NativeBridge.dispatch(JSON)
+    Note right of WV: WebKit 线程调用
+    WV->>Handler: dispatch(module, method, params)
+    Handler-->>WV: callback(response)
+    WV->>Bridge: evaluateJavascript("JSBridge.onCallback(id, data)")
+    Bridge->>JS: 执行 callback(response)
+
+    Note over JS, Handler: 方式二：URL Scheme 拦截
+    JS->>WV: iframe.src = "jsbridge://method?params=..."
+    WV->>WV: shouldOverrideUrlLoading 拦截
+    WV->>Handler: 解析 URL, dispatch
+    Handler-->>WV: callback(response)
+    WV->>JS: evaluateJavascript 回传结果
+
+    Note over JS, Handler: 方式三：WebMessagePort 双向通道
+    WV->>JS: postWebMessage(init, [jsPort])
+    JS->>JS: 保存 port 引用
+    JS->>WV: port.postMessage("request")
+    WV->>Handler: onMessage 分发处理
+    Handler-->>WV: nativePort.postMessage("response")
+    WV->>JS: port.onmessage 接收
