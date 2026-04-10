@@ -1,0 +1,39 @@
+sequenceDiagram
+    participant App as App 进程
+    participant T as Thread
+    participant UEH as 自定义 UncaughtExceptionHandler<br/>(Crashlytics/Bugly)
+    participant Prev as 前任 Handler<br/>(链式保存)
+    participant Kill as RuntimeInit<br/>.KillApplicationHandler
+
+    App->>T: 未捕获异常抛出
+    T->>T: 查找 Thread 级 Handler
+
+    alt Thread 级 Handler 存在
+        T->>UEH: dispatchUncaughtException(thread, throwable)
+    else 无 Thread 级 Handler
+        T->>T: 查找 ThreadGroup 级 Handler
+        T->>UEH: dispatchUncaughtException(thread, throwable)
+    end
+
+    rect rgb(232, 245, 233)
+        Note over UEH: Crash SDK 处理流程
+        UEH->>UEH: 1. 采集 Crash 信息<br/>(堆栈/设备/Logcat/内存)
+        UEH->>UEH: 2. 持久化到本地文件
+        UEH->>UEH: 3. 记录自定义数据
+    end
+
+    UEH->>Prev: 4. 调用前任 Handler（链式传递）
+
+    alt 链上还有其他 Handler
+        Prev->>Prev: 其他 SDK 的处理逻辑
+        Prev->>Kill: 传递给系统默认 Handler
+    else 直接到系统默认
+        UEH->>Kill: 传递给系统默认 Handler
+    end
+
+    rect rgb(255, 235, 238)
+        Note over Kill: 系统默认处理
+        Kill->>Kill: 写入 DropBox 日志
+        Kill->>Kill: 发送 SIGKILL 终止进程
+        Kill->>App: Process.killProcess(Process.myPid())
+    end

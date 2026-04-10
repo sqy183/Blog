@@ -1,0 +1,32 @@
+graph TD
+    subgraph client ["客户端 (App 进程)"]
+        direction TB
+        A1["Crash 捕获<br/>UncaughtExceptionHandler<br/>+ sigaction"] --> AGG
+        A2["卡顿检测<br/>Choreographer.FrameCallback<br/>+ Looper Printer"] --> AGG
+        A3["网络监控<br/>OkHttp EventListener<br/>+ 字节码插桩"] --> AGG
+        A4["资源监控<br/>内存水位 / FD 数<br/>/ 线程数"] --> AGG
+        A5["启动耗时<br/>TTID / TTFD<br/>关键节点打点"] --> AGG
+
+        AGG["本地聚合层<br/>采样 + 去重 + 批量打包"]
+        AGG --> UPLOAD["上报层<br/>压缩 + 加密 + 断点续传<br/>WiFi 优先 / 采样率控制"]
+    end
+
+    subgraph server ["后端服务"]
+        direction TB
+        RECV["数据接收层<br/>Kafka / 消息队列"] --> PROC["数据处理层<br/>符号化 + 聚合 + 指纹提取"]
+        PROC --> STORE["存储层<br/>ES / ClickHouse"]
+        STORE --> DASH["可视化看板<br/>Crash 率趋势 / Top 问题<br/>/ 版本对比 / 机型分布"]
+    end
+
+    subgraph alert ["告警与响应"]
+        direction TB
+        RULE["告警规则引擎<br/>基线对比 / 环比突增<br/>/ 绝对阈值"] --> NOTIFY["通知分发<br/>IM / 邮件 / 电话"]
+        NOTIFY --> ONCALL["值班响应<br/>P0 → 15分钟响应<br/>P1 → 1小时响应"]
+    end
+
+    UPLOAD --> RECV
+    STORE --> RULE
+
+    style client fill:#e3f2fd
+    style server fill:#e8f5e9
+    style alert fill:#fff3e0

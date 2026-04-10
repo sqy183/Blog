@@ -1,0 +1,37 @@
+flowchart TD
+    A["Native 代码执行<br/>(JNI / So 库)"] --> B{"触发非法操作"}
+
+    B --> C1["空指针解引用<br/>SIGSEGV"]
+    B --> C2["主动调用 abort()<br/>SIGABRT"]
+    B --> C3["非法内存访问<br/>SIGBUS"]
+    B --> C4["除零错误<br/>SIGFPE"]
+
+    C1 --> D["内核发送信号给进程"]
+    C2 --> D
+    C3 --> D
+    C4 --> D
+
+    D --> E{"sigaction 已注册?"}
+
+    E -->|是| F["跳转到自定义信号处理函数<br/>(在 sigaltstack 替代栈上执行)"]
+    E -->|否| G["系统默认处理：生成 tombstone 并终止"]
+
+    F --> H["1. 获取 ucontext<br/>（寄存器快照）"]
+    H --> I["2. 栈回溯<br/>（libunwindstack / frame pointer）"]
+    I --> J["3. 采集附加信息<br/>（maps / fd / logcat）"]
+    J --> K["4. 写入 minidump 文件"]
+    K --> L["5. 恢复默认信号处理<br/>（SIG_DFL）"]
+    L --> M["6. 重新抛出信号<br/>（re-raise）"]
+    M --> G
+
+    subgraph upload ["下次启动时上报"]
+        N["App 重新启动"] --> O["检测到未上报的<br/>minidump 文件"]
+        O --> P["符号化<br/>（addr2line / Breakpad）"]
+        P --> Q["上报到 Crash 平台"]
+    end
+
+    K -.->|持久化| N
+
+    style A fill:#e3f2fd
+    style G fill:#ffebee
+    style upload fill:#f3e5f5
