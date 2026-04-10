@@ -1,0 +1,33 @@
+flowchart LR
+    PR["PR 提交"] --> Parallel{"并行检查"}
+
+    Parallel --> MetaDiff["Metalava<br/>API Diff"]
+    Parallel --> JapiCmp["japicmp<br/>二进制兼容性"]
+    Parallel --> DepDiff["依赖快照<br/>Diff"]
+
+    MetaDiff --> Analyze["影响范围<br/>分析"]
+    JapiCmp --> Analyze
+    DepDiff --> Analyze
+
+    Analyze --> UsedBy["@UsedBy 注解<br/>匹配产品线"]
+    UsedBy --> Report["生成影响<br/>分析报告"]
+    Report --> Grade{"影响分级"}
+
+    Grade -->|P0 二进制不兼容| Block["阻断合入<br/>+ 通知 Owner"]
+    Grade -->|P1 行为变更| Review["强制 Review<br/>+ 通知产品线"]
+    Grade -->|P2 性能影响| Warn["Warning<br/>+ 标注 PR"]
+    Grade -->|P3 废弃通知| Info["Info<br/>+ 记录变更日志"]
+
+    classDef trigger fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
+    classDef check fill:#FFF3E0,stroke:#E65100,color:#BF360C
+    classDef analyze fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    classDef action fill:#FFEBEE,stroke:#C62828,color:#B71C1C
+    classDef warn fill:#FFF9C4,stroke:#F57F17,color:#E65100
+    classDef info fill:#F3E5F5,stroke:#6A1B9A,color:#4A148C
+
+    class PR trigger
+    class MetaDiff,JapiCmp,DepDiff check
+    class Analyze,UsedBy,Report analyze
+    class Block action
+    class Review,Warn warn
+    class Info info

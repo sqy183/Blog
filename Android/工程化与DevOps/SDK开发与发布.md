@@ -24,6 +24,8 @@
 
 **纪律三：隔离稳定。** SDK 内部的异常不能传播到宿主进程，SDK 的线程不能抢占宿主的 CPU 时间片，SDK 的资源不能与宿主冲突。SDK 必须像一个"沙盒"一样运行。
 
+> 深入阅读：[SDK 多产品线变更管理](SDK多产品线变更管理.md) — 多产品线复用架构、变更影响评估流水线、兼容性验证矩阵、灰度发布策略
+
 ---
 
 ## 二、API 设计原则
@@ -151,6 +153,8 @@ fun init(context: Context, config: Config = Config.DEFAULT)
 
 - **Metalava**：Google 官方的 API 签名管理工具，生成 `api/current.txt`，CI 中比对变更检测不兼容修改
 - **japicmp**：Java API Compatibility Checker，对比两个 JAR/AAR 的二进制兼容性，生成报告
+
+> 多产品线场景下的系统化影响评估方法论，参见专题 [SDK 多产品线变更管理 - 第三章](SDK多产品线变更管理.md#三变更影响评估)
 
 **`@Deprecated` 过渡策略**
 
@@ -1180,6 +1184,8 @@ android {
 ### 7.1 Crash 隔离
 
 > SDK 的第一条铁律：**永远不能因为 SDK 内部异常导致宿主 App 崩溃。**
+>
+> 深入阅读：[Crash 治理与线上稳定性 - 第六章](../性能优化/Crash治理与线上稳定性.md#六sdk-场景的稳定性特殊考量) — 三层隔离模型（方法级/线程级/进程级）、SDK 版本粒度监控、宿主兼容性 Crash 排查
 
 **异常边界策略**
 

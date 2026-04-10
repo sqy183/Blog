@@ -1,0 +1,50 @@
+graph TD
+    subgraph 宿主层["宿主层（各产品线 App）"]
+        AppA["App A<br/>（主 App）"]
+        AppB["App B<br/>（极速版）"]
+        AppC["App C<br/>（国际版）"]
+    end
+
+    subgraph Flavor层["Flavor 层（产品线定制）"]
+        FlavorA["sdk-flavor-a<br/>独有功能 / 配置"]
+        FlavorB["sdk-flavor-b<br/>独有功能 / 配置"]
+        FlavorC["sdk-flavor-c<br/>独有功能 / 配置"]
+    end
+
+    subgraph Core层["Core 层（全产品线共用）"]
+        API["sdk-api<br/>公开接口 + 注解"]
+        Core["sdk-core<br/>核心逻辑"]
+        BOM["sdk-bom<br/>版本对齐"]
+    end
+
+    subgraph 适配层["适配层（可选模块）"]
+        OkHttp["sdk-okhttp<br/>网络适配"]
+        Gson["sdk-gson<br/>序列化适配"]
+    end
+
+    AppA --> FlavorA
+    AppB --> FlavorB
+    AppC --> FlavorC
+
+    FlavorA --> API
+    FlavorB --> API
+    FlavorC --> API
+
+    API --> Core
+    Core --> OkHttp
+    Core --> Gson
+
+    BOM -.->|版本约束| API
+    BOM -.->|版本约束| Core
+    BOM -.->|版本约束| OkHttp
+    BOM -.->|版本约束| Gson
+
+    classDef host fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
+    classDef flavor fill:#FFF3E0,stroke:#E65100,color:#BF360C
+    classDef core fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+    classDef adapter fill:#F3E5F5,stroke:#6A1B9A,color:#4A148C
+
+    class AppA,AppB,AppC host
+    class FlavorA,FlavorB,FlavorC flavor
+    class API,Core,BOM core
+    class OkHttp,Gson adapter

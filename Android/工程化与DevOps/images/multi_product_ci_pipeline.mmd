@@ -1,0 +1,43 @@
+flowchart TD
+    PR["PR / Merge 触发"] --> Stage1
+
+    subgraph Stage1["Stage 1: 静态分析"]
+        APICheck["Metalava<br/>API Diff"]
+        BinaryCheck["japicmp<br/>二进制兼容"]
+        LintCheck["Lint /<br/>代码规范"]
+    end
+
+    Stage1 --> Gate1{"Gate 1<br/>兼容性通过?"}
+    Gate1 -->|No| Reject1["阻断 + 影响报告"]
+    Gate1 -->|Yes| Stage2
+
+    subgraph Stage2["Stage 2: 全产品线构建"]
+        BuildA["Sample A<br/>构建"]
+        BuildB["Sample B<br/>构建"]
+        BuildC["Sample C<br/>构建"]
+    end
+
+    Stage2 --> Gate2{"Gate 2<br/>全部构建成功?"}
+    Gate2 -->|No| Reject2["编译失败报告<br/>+ 定位产品线"]
+    Gate2 -->|Yes| Stage3
+
+    subgraph Stage3["Stage 3: 集成验证"]
+        Contract["契约测试<br/>Contract Tests"]
+        Integration["集成测试<br/>核心流程"]
+        Perf["性能基线<br/>对比"]
+    end
+
+    Stage3 --> Gate3{"Gate 3<br/>验证通过?"}
+    Gate3 -->|No| Reject3["测试报告<br/>+ 回归分析"]
+    Gate3 -->|Yes| Merge["允许合入"]
+
+    classDef trigger fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
+    classDef stage fill:#FFFFFF,stroke:#616161,color:#212121
+    classDef gate fill:#FFF3E0,stroke:#E65100,color:#BF360C
+    classDef reject fill:#FFEBEE,stroke:#C62828,color:#B71C1C
+    classDef pass fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
+
+    class PR trigger
+    class Gate1,Gate2,Gate3 gate
+    class Reject1,Reject2,Reject3 reject
+    class Merge pass

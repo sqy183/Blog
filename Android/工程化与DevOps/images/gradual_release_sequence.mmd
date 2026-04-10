@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant SDK as SDK 团队
+    participant Config as 配置中心
+    participant A as 产品线 A<br/>（金丝雀）
+    participant B as 产品线 B
+    participant C as 产品线 C
+    participant Monitor as 监控系统
+
+    SDK->>SDK: 发布 2.4.0-rc.1 到 Maven
+    SDK->>Config: 设置 Feature Flag<br/>仅产品线 A 开启
+
+    rect rgb(232, 245, 233)
+        Note over A: Phase 1: 金丝雀（1-2天）
+        A->>A: 升级 SDK 2.4.0-rc.1
+        A->>Monitor: 上报指标
+        Monitor-->>SDK: Crash 率 / ANR / 性能基线
+        SDK->>SDK: 评估：指标正常
+    end
+
+    SDK->>Config: 扩量：产品线 B 开启
+
+    rect rgb(227, 242, 253)
+        Note over A,B: Phase 2: 扩量验证（2-3天）
+        B->>B: 升级 SDK 2.4.0-rc.1
+        A->>Monitor: 持续上报
+        B->>Monitor: 上报指标
+        Monitor-->>SDK: 全量指标对比
+        SDK->>SDK: 评估：指标正常
+    end
+
+    SDK->>SDK: 发布 2.4.0 正式版
+    SDK->>Config: 全产品线开启
+
+    rect rgb(243, 229, 245)
+        Note over A,C: Phase 3: 全量推进
+        C->>C: 升级 SDK 2.4.0
+        A->>Monitor: 上报
+        B->>Monitor: 上报
+        C->>Monitor: 上报
+        Monitor-->>SDK: 全量稳定性确认
+    end
+
+    Note over SDK,Monitor: 若任一阶段指标异常：<br/>Config 一键关闭 Flag → 快速回滚
